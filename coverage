@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+
+coverage erase && coverage run $1 && rm -rf htmlcov/ && coverage html && xdg-open htmlcov/index.html
