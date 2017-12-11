@@ -7,7 +7,7 @@ import functoolsex
 
 
 setup(name='functoolsex',
-      version=functoolsex.__version__,
+      version='0.0.3',
       description='return ex(pyrsistent, fn, pytoolz, ...)',
       url='https://github.com/aymazon/functools-ex',
       author='Tony L. Fan',
