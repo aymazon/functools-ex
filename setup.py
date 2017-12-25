@@ -3,11 +3,9 @@
 from os.path import exists
 from setuptools import setup
 
-import functoolsex
-
 
 setup(name='functoolsex',
-      version=functoolsex.__version__,
+      version='0.0.4',
       description='return ex(pyrsistent, fn, pytoolz, ...)',
       url='https://github.com/aymazon/functools-ex',
       author='Tony L. Fan',
