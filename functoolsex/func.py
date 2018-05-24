@@ -21,4 +21,15 @@ is_option_empty = partial(flip(isinstance), Empty)
 
 
 def uppack_args(func, args):
+    """
+    >>> from collections import namedtuple
+    >>> from fn import F, _ as X
+    >>> from toolz import juxt
+    >>> Attr = namedtuple("Attr", ("name", "value"))
+    >>> parse_name = F(X.call("partition", "=")[0])
+    >>> parse_value = F(X.call("partition", "=")[2])
+    >>> load = F(juxt(parse_name, parse_value)) >> F(uppack_args, Attr)
+    >>> load("a=b")
+    Attr(name=u'a', value=u'b')
+    """
     return func(*args)

@@ -1,2 +1,2 @@
-from .func import *
-from .iters import *
+from .func import *  # NOQA
+from .iters import *  # NOQA
