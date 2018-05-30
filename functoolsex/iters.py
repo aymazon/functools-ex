@@ -48,20 +48,29 @@ except ImportError:
             yield tuple(pool[i] for i in indices)
 
 
-__all__ = ("combinations_with_replacement", "compress", "every",
-           "first_object", "first_option_full", "first_pred_object",
-           "first_true", "getter", "laccumulate", "lchain", "lcombinations",
-           "lcombinations_with_replacement", "lcompact", "lcompress",
-           "lconcat", "lconcatv", "lcons", "lcycle", "ldiff", "ldrop",
-           "ldropwhile", "lfilter", "lfilterfalse", "lflatten", "lgrouper",
-           "linterleave", "linterpose", "lislice", "liter_except", "lmap",
-           "lmapcat", "lmerge_sorted", "lncycles", "lpairwise", "lpartition",
-           "lpartition_all", "lpermutations", "lpluck", "lpowerset",
-           "lproduct", "lrandom_sample", "lrange", "lreject", "lremove",
-           "lrepeat", "lrepeatfunc", "lrest", "lroundrobin", "lsliding_window",
-           "lsplitat", "lsplitby", "lsplitin", "lstarmap", "ltail", "ltake",
-           "ltake_nth", "ltakewhile", "ltee", "ltopk", "lunique", "lzip",
-           "lzip_longest", "some")
+__all__ = (
+    "combinations_with_replacement", "compress", "every", "first_object",
+    "first_option_full", "first_pred_object", "first_true", "getter",
+    "laccumulate", "lchain", "lcombinations", "lcombinations_with_replacement",
+    "lcompact", "lcompress", "lconcat", "lconcatv", "lcons", "lcycle", "ldiff",
+    "ldrop", "ldropwhile", "lfilter", "lfilterfalse", "lflatten", "lgrouper",
+    "linterleave", "linterpose", "lislice", "liter_except", "lmap", "lmapcat",
+    "lmerge_sorted", "lncycles", "lpairwise", "lpartition", "lpartition_all",
+    "lpermutations", "lpluck", "lpowerset", "lproduct", "lrandom_sample",
+    "lrange", "lreject", "lremove", "lrepeat", "lrepeatfunc", "lrest",
+    "lroundrobin", "lsliding_window", "lsplitat", "lsplitby", "lsplitin",
+    "lstarmap", "ltail", "ltake", "ltake_nth", "ltakewhile", "ltee", "ltopk",
+    "lunique", "lzip", "lzip_longest", "taccumulate", "tchain",
+    "tcombinations", "tcombinations_with_replacement", "tcompact", "tcompress",
+    "tconcat", "tconcatv", "tcons", "tcycle", "tdiff", "tdrop", "tdropwhile",
+    "tfilter", "tfilterfalse", "tflatten", "tgrouper", "tinterleave",
+    "tinterpose", "tislice", "titer_except", "tmap", "tmapcat",
+    "tmerge_sorted", "tncycles", "tpairwise", "tpartition", "tpartition_all",
+    "tpermutations", "tpluck", "tpowerset", "tproduct", "trandom_sample",
+    "trange", "treject", "tremove", "trepeat", "trepeatfunc", "trest",
+    "troundrobin", "tsliding_window", "tsplitat", "tsplitby", "tsplitin",
+    "tstarmap", "ttail", "ttake", "ttake_nth", "ttakewhile", "ttee", "ttopk",
+    "tunique", "tzip", "tzip_longest", "some")
 
 
 def every(predicate, iterable):
@@ -132,14 +141,32 @@ def first_pred_object(iterable, pred=is_not_none):
     return None
 
 
+def getter(index):
+    if isinstance(index, list) or isinstance(index, tuple) \
+            or isinstance(index, PList) or isinstance(index, PVector):
+        if len(index) == 1:
+            index = index[0]
+            return lambda x: (x[index], )
+        elif index:
+            return operator.itemgetter(*index)
+        else:
+            return lambda x: ()
+    else:
+        return operator.itemgetter(index)
+
+
 def lremove(predicate, seq):
+    """
+    >>> lremove(lambda x: x % 2 == 0, [1, 2, 3, 4])
+    [1, 3]
+    """
     return list(remove(predicate, seq))
 
 
 def laccumulate(binop, seq, initial=no_default):
     """
-    >>> lremove(lambda x: x % 2 == 0, [1, 2, 3, 4])
-    [1, 3]
+    >>> laccumulate(lambda x, y: x + y, [1, 2, 3, 4, 5])
+    [1, 3, 6, 10, 15]
     """
     return list(accumulate(binop, seq, initial=initial))
 
@@ -204,7 +231,7 @@ def lrest(seq):
 
 def ltake_nth(n, seq):
     """
-    >>> list(take_nth(2, (10, 20, 30, 40, 50)))
+    >>> ltake_nth(2, (10, 20, 30, 40, 50))
     [10, 30, 50]
     """
     return list(take_nth(n, seq))
@@ -304,20 +331,6 @@ def ldiff(*seqs, **kwargs):
     return list(diff(*seqs, **kwargs))
 
 
-def getter(index):
-    if isinstance(index, list) or isinstance(index, PList) \
-            or isinstance(index, PVector):
-        if len(index) == 1:
-            index = index[0]
-            return lambda x: (x[index], )
-        elif index:
-            return operator.itemgetter(*index)
-        else:
-            return lambda x: ()
-    else:
-        return operator.itemgetter(index)
-
-
 def ltopk(k, seq, key=None):
     """
     >>> ltopk(2, [1, 100, 10, 1000])
@@ -337,8 +350,6 @@ def lrandom_sample(prob, seq, random_state=None):
     [6, 9, 19, 35, 45, 50, 58, 62, 68, 72, 78, 86, 95]
     >>> lrandom_sample(0.1, seq) # doctest: +SKIP
     [6, 44, 54, 61, 69, 94]
-    >>> lrandom_sample(0.1, seq, random_state=2016)
-    [7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98]
     >>> lrandom_sample(0.1, seq, random_state=2016)
     [7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98]
     """
@@ -639,3 +650,500 @@ def lflatten(items):
     [1, 2, 3, 4, 5, 6, 7, 8]
     """
     return list(flatten(items))
+
+
+def tremove(predicate, seq):
+    """
+    >>> tremove(lambda x: x % 2 == 0, [1, 2, 3, 4])
+    (1, 3)
+    """
+    return tuple(remove(predicate, seq))
+
+
+def taccumulate(binop, seq, initial=no_default):
+    """
+    >>> taccumulate(lambda x, y: x + y, [1, 2, 3, 4, 5])
+    (1, 3, 6, 10, 15)
+    """
+    return tuple(accumulate(binop, seq, initial=initial))
+
+
+def tmerge_sorted(*seqs, **kwargs):
+    """
+    >>> tmerge_sorted([1, 3, 5], [2, 4, 6])
+    (1, 2, 3, 4, 5, 6)
+    >>> tmerge_sorted([2, 3], [1, 3], key=lambda x: x // 3)
+    (2, 1, 3, 3)
+    """
+    return tuple(merge_sorted(*seqs, **kwargs))
+
+
+def tinterleave(seqs):
+    """
+    >>> tinterleave([[1, 2], [3, 4]])
+    (1, 3, 2, 4)
+    """
+    return tuple(interleave(seqs))
+
+
+def tunique(seq, key=None):
+    """
+    >>> tunique((1, 2, 3))
+    (1, 2, 3)
+    """
+    return tuple(unique(seq, key=key))
+
+
+def ttake(n, seq):
+    """
+    >>> ttake(2, [10, 20, 30, 40, 50])
+    (10, 20)
+    """
+    return tuple(take(n, seq))
+
+
+def ttail(n, seq):
+    """ warn tail function
+    >>> ttail(2, (10, 20, 30, 40, 50))
+    (40, 50)
+    """
+    return tuple(tail(n, seq))
+
+
+def tdrop(n, seq):
+    """
+    >>> tdrop(2, (10, 20, 30, 40, 50))
+    (30, 40, 50)
+    """
+    return tuple(drop(n, seq))
+
+
+def trest(seq):
+    """
+    >>> trest((10, 20, 30, 40, 50))
+    (20, 30, 40, 50)
+    """
+    return tuple(rest(seq))
+
+
+def ttake_nth(n, seq):
+    """
+    >>> ttake_nth(2, (10, 20, 30, 40, 50))
+    (10, 30, 50)
+    """
+    return tuple(take_nth(n, seq))
+
+
+def tconcat(seqs):
+    """
+    >>> tconcat([[], [1], (2, 3)])
+    (1, 2, 3)
+    """
+    return tuple(concat(seqs))
+
+
+def tconcatv(*seqs):
+    """
+    >>> tconcatv([], [1], (2, 3))
+    (1, 2, 3)
+    """
+    return tuple(concatv(*seqs))
+
+
+def tmapcat(func, seqs):
+    """
+    >>> tmapcat(lambda s: [c.upper() for c in s], \
+                [[u"a", u"b"], [u"c", u"d", u"e"]])
+    (u'A', u'B', u'C', u'D', u'E')
+    """
+    return tuple(mapcat(func, seqs))
+
+
+def tcons(el, seq):
+    """
+    >>> tcons(1, (2, 3))
+    (1, 2, 3)
+    """
+    return tuple(cons(el, seq))
+
+
+def tinterpose(el, seq):
+    """
+    >>> tinterpose(u"a", (1, 2, 3))
+    (1, u'a', 2, u'a', 3)
+    """
+    return tuple(interpose(el, seq))
+
+
+def tsliding_window(n, seq):
+    """
+    >>> tsliding_window(2, [1, 2, 3, 4])
+    ((1, 2), (2, 3), (3, 4))
+    """
+    return tuple(sliding_window(n, seq))
+
+
+def tpartition(n, seq, pad=no_pad):
+    """
+    >>> tpartition(2, [1, 2, 3, 4])
+    ((1, 2), (3, 4))
+    >>> tpartition(2, [1, 2, 3, 4, 5])
+    ((1, 2), (3, 4))
+    >>> tpartition(2, [1, 2, 3, 4, 5], pad=None)
+    ((1, 2), (3, 4), (5, None))
+    """
+    return tuple(partition(n, seq, pad=pad))
+
+
+def tpartition_all(n, seq):
+    """
+    >>> tpartition_all(2, [1, 2, 3, 4])
+    ((1, 2), (3, 4))
+    >>> tpartition_all(2, [1, 2, 3, 4, 5])
+    ((1, 2), (3, 4), (5,))
+    """
+    return tuple(partition_all(n, seq))
+
+
+def tpluck(ind, seqs, default=no_default):
+    """
+    >>> data = [{'id': 1, 'name': 'Cheese'}, {'id': 2, 'name': 'Pies'}]
+    >>> tpluck('name', data)
+    (u'Cheese', u'Pies')
+    >>> tpluck([0, 1], [[1, 2, 3], [4, 5, 7]])
+    ((1, 2), (4, 5))
+    """
+    return tuple(pluck(ind, seqs, default=default))
+
+
+def tdiff(*seqs, **kwargs):
+    """
+    >>> tdiff([1, 2, 3], [1, 2, 10, 100])
+    ((3, 10),)
+    >>> tdiff([1, 2, 3], [1, 2, 10, 100], default=None)
+    ((3, 10), (None, 100))
+    >>> tdiff(['apples', 'bananas'], ['Apples', 'Oranges'], key=unicode.lower)
+    ((u'bananas', u'Oranges'),)
+    """
+    return tuple(diff(*seqs, **kwargs))
+
+
+def ttopk(k, seq, key=None):
+    """
+    >>> ttopk(2, [1, 100, 10, 1000])
+    (1000, 100)
+    >>> ttopk(2, ['Alice', 'Bob', 'Charlie', 'Dan'], key=len)
+    (u'Charlie', u'Alice')
+    """
+    if key is not None and not callable(key):
+        key = getter(key)
+    return tuple(heapq.nlargest(k, seq, key=key))
+
+
+def trandom_sample(prob, seq, random_state=None):
+    """
+    >>> seq = list(range(100))
+    >>> trandom_sample(0.1, seq) # doctest: +SKIP
+    (6, 9, 19, 35, 45, 50, 58, 62, 68, 72, 78, 86, 95)
+    >>> trandom_sample(0.1, seq) # doctest: +SKIP
+    (6, 44, 54, 61, 69, 94)
+    >>> trandom_sample(0.1, seq, random_state=2016)
+    (7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98)
+    """
+    return tuple(random_sample(prob, seq, random_state=random_state))
+
+
+def trange(*args, **kwargs):
+    """
+    >>> trange(3)
+    (0, 1, 2)
+    >>> trange(1, 3)
+    (1, 2)
+    >>> trange(0, 3, 2)
+    (0, 2)
+    """
+    return tuple(range(*args, **kwargs))
+
+
+def tcycle(iterable, n):
+    """
+    >>> tcycle([1, 2, 3], 2)
+    (1, 2)
+    >>> tcycle([1, 2, 3], 4)
+    (1, 2, 3, 1)
+    """
+
+    return tuple(islice(cycle(iterable), n))
+
+
+def trepeat(elem, n):
+    """
+    >>> trepeat(1, 2)
+    (1, 1)
+    """
+    return tuple(repeat(elem, n))
+
+
+def tchain(*iterables):
+    """
+    >>> tchain([1, 2], [3, 4])
+    (1, 2, 3, 4)
+    """
+    return tuple(chain(*iterables))
+
+
+def tcompress(data, selectors):
+    """
+    >>> tcompress('ABCDEF', [1, 0, 1, 0, 1, 1])
+    (u'A', u'C', u'E', u'F')
+    """
+    return tuple(compress(data, selectors))
+
+
+def tdropwhile(predicate, iterable):
+    """
+    >>> tdropwhile(lambda x: x < 5 , [1, 4, 6, 4, 1])
+    (6, 4, 1)
+    """
+    return tuple(dropwhile(predicate, iterable))
+
+
+def ttakewhile(predicate, iterable):
+    """
+    >>> ttakewhile(lambda x: x < 5, [1, 4, 6, 4, 1])
+    (1, 4)
+    """
+    return tuple(takewhile(predicate, iterable))
+
+
+def tmap(function, *iterables):
+    """
+    >>> tmap(pow, (2, 3, 10), (5, 2, 3))
+    (32, 9, 1000)
+    """
+    return tuple(map(function, *iterables))
+
+
+def tstarmap(function, iterable):
+    """
+    >>> tstarmap(pow, [(2, 5), (3, 2), (10, 3)])
+    (32, 9, 1000)
+    """
+    return tuple(starmap(function, iterable))
+
+
+def ttee(iterable, n=2):
+    """
+    >>> ttee("ABC")
+    ((u'A', u'B', u'C'), (u'A', u'B', u'C'))
+    """
+    return tuple(map(tuple, tee(iterable, n)))
+
+
+def tfilter(predicate, iterable):
+    """
+    >>> tfilter(lambda x: x % 2, range(10))
+    (1, 3, 5, 7, 9)
+    """
+    return tuple(filter(predicate, iterable))
+
+
+def tfilterfalse(predicate, iterable):
+    """
+    >>> tfilterfalse(lambda x: x % 2, range(10))
+    (0, 2, 4, 6, 8)
+    """
+    return tuple(filterfalse(predicate, iterable))
+
+
+def tislice(iterable, *args):
+    """ (iterable, stop) or (iterable, start, stop[, step])
+    >>> tislice('ABCDEFG', 2)
+    (u'A', u'B')
+    >>> tislice('ABCDEFG', 2, 4)
+    (u'C', u'D')
+    >>> tislice('ABCDEFG', 2, None)
+    (u'C', u'D', u'E', u'F', u'G')
+    >>> tislice('ABCDEFG', 0, None, 2)
+    (u'A', u'C', u'E', u'G')
+    """
+    return tuple(islice(iterable, *args))
+
+
+def tzip(*iterables):
+    """
+    >>> tzip('ABCD', 'xy')
+    ((u'A', u'x'), (u'B', u'y'))
+    """
+    return tuple(zip(*iterables))
+
+
+def tzip_longest(*args, **kwds):
+    """
+    >>> tzip_longest('ABCD', 'xy', fillvalue='-')
+    ((u'A', u'x'), (u'B', u'y'), (u'C', u'-'), (u'D', u'-'))
+    >>> tzip_longest('ABCD', 'xy')
+    ((u'A', u'x'), (u'B', u'y'), (u'C', None), (u'D', None))
+    """
+    return tuple(zip_longest(*args, **kwds))
+
+
+def tproduct(*args, **kwds):
+    """
+    >>> tproduct('ABC', 'xy')
+    ((u'A', u'x'), (u'A', u'y'), (u'B', u'x'), (u'B', u'y'), (u'C', u'x'), (u'C', u'y'))
+    """
+    return tuple(product(*args, **kwds))
+
+
+def tpermutations(iterable, r=None):
+    """
+    >>> tpermutations('ABC')
+    ((u'A', u'B', u'C'), (u'A', u'C', u'B'), (u'B', u'A', u'C'), (u'B', u'C', u'A'), (u'C', u'A', u'B'), (u'C', u'B', u'A'))
+    >>> tpermutations('ABC', 2)
+    ((u'A', u'B'), (u'A', u'C'), (u'B', u'A'), (u'B', u'C'), (u'C', u'A'), (u'C', u'B'))
+    >>> tpermutations('ABC', 3)
+    ((u'A', u'B', u'C'), (u'A', u'C', u'B'), (u'B', u'A', u'C'), (u'B', u'C', u'A'), (u'C', u'A', u'B'), (u'C', u'B', u'A'))
+    """
+    return tuple(permutations(iterable, r))
+
+
+def tcombinations(iterable, r):
+    """
+    >>> tcombinations('ABCD', 0)
+    ((),)
+    >>> tcombinations('ABCD', 1)
+    ((u'A',), (u'B',), (u'C',), (u'D',))
+    >>> tcombinations('ABCD', 2)
+    ((u'A', u'B'), (u'A', u'C'), (u'A', u'D'), (u'B', u'C'), (u'B', u'D'), (u'C', u'D'))
+    >>> tcombinations('ABCD', 3)
+    ((u'A', u'B', u'C'), (u'A', u'B', u'D'), (u'A', u'C', u'D'), (u'B', u'C', u'D'))
+    >>> tcombinations('ABCD', 4)
+    ((u'A', u'B', u'C', u'D'),)
+    >>> tcombinations('ABCD', 5)
+    ()
+    """
+    return tuple(combinations(iterable, r))
+
+
+def tcombinations_with_replacement(iterable, r):
+    """
+    >>> tcombinations_with_replacement('ABCD', 0)
+    ((),)
+    >>> tcombinations_with_replacement('ABCD', 1)
+    ((u'A',), (u'B',), (u'C',), (u'D',))
+    >>> tcombinations_with_replacement('ABCD', 2)
+    ((u'A', u'A'), (u'A', u'B'), (u'A', u'C'), (u'A', u'D'), (u'B', u'B'), (u'B', u'C'), (u'B', u'D'), (u'C', u'C'), (u'C', u'D'), (u'D', u'D'))
+    >>> tcombinations_with_replacement('ABCD', 3)
+    ((u'A', u'A', u'A'), (u'A', u'A', u'B'), (u'A', u'A', u'C'), (u'A', u'A', u'D'), (u'A', u'B', u'B'), (u'A', u'B', u'C'), (u'A', u'B', u'D'), (u'A', u'C', u'C'), (u'A', u'C', u'D'), (u'A', u'D', u'D'), (u'B', u'B', u'B'), (u'B', u'B', u'C'), (u'B', u'B', u'D'), (u'B', u'C', u'C'), (u'B', u'C', u'D'), (u'B', u'D', u'D'), (u'C', u'C', u'C'), (u'C', u'C', u'D'), (u'C', u'D', u'D'), (u'D', u'D', u'D'))
+    >>> tcombinations_with_replacement('ABCD', 4)
+    ((u'A', u'A', u'A', u'A'), (u'A', u'A', u'A', u'B'), (u'A', u'A', u'A', u'C'), (u'A', u'A', u'A', u'D'), (u'A', u'A', u'B', u'B'), (u'A', u'A', u'B', u'C'), (u'A', u'A', u'B', u'D'), (u'A', u'A', u'C', u'C'), (u'A', u'A', u'C', u'D'), (u'A', u'A', u'D', u'D'), (u'A', u'B', u'B', u'B'), (u'A', u'B', u'B', u'C'), (u'A', u'B', u'B', u'D'), (u'A', u'B', u'C', u'C'), (u'A', u'B', u'C', u'D'), (u'A', u'B', u'D', u'D'), (u'A', u'C', u'C', u'C'), (u'A', u'C', u'C', u'D'), (u'A', u'C', u'D', u'D'), (u'A', u'D', u'D', u'D'), (u'B', u'B', u'B', u'B'), (u'B', u'B', u'B', u'C'), (u'B', u'B', u'B', u'D'), (u'B', u'B', u'C', u'C'), (u'B', u'B', u'C', u'D'), (u'B', u'B', u'D', u'D'), (u'B', u'C', u'C', u'C'), (u'B', u'C', u'C', u'D'), (u'B', u'C', u'D', u'D'), (u'B', u'D', u'D', u'D'), (u'C', u'C', u'C', u'C'), (u'C', u'C', u'C', u'D'), (u'C', u'C', u'D', u'D'), (u'C', u'D', u'D', u'D'), (u'D', u'D', u'D', u'D'))
+    >>> tcombinations_with_replacement('ABC', 4)
+    ((u'A', u'A', u'A', u'A'), (u'A', u'A', u'A', u'B'), (u'A', u'A', u'A', u'C'), (u'A', u'A', u'B', u'B'), (u'A', u'A', u'B', u'C'), (u'A', u'A', u'C', u'C'), (u'A', u'B', u'B', u'B'), (u'A', u'B', u'B', u'C'), (u'A', u'B', u'C', u'C'), (u'A', u'C', u'C', u'C'), (u'B', u'B', u'B', u'B'), (u'B', u'B', u'B', u'C'), (u'B', u'B', u'C', u'C'), (u'B', u'C', u'C', u'C'), (u'C', u'C', u'C', u'C'))
+    """
+    return tuple(combinations_with_replacement(iterable, r))
+
+
+def tcompact(iterable):
+    """
+    >>> tcompact((0, 1, 2, False, True, None))
+    (1, 2, True)
+    """
+    return tuple(compact(iterable))
+
+
+def treject(predicate, iterable):
+    """
+    >>> treject(lambda x: x > 1, [0, 1, 2])
+    (0, 1)
+    """
+    return tuple(reject(predicate, iterable))
+
+
+def tncycles(iterable, n):
+    """
+    >>> tncycles([1, 2, 3], 2)
+    (1, 2, 3, 1, 2, 3)
+    """
+    return tuple(ncycles(iterable, n))
+
+
+def trepeatfunc(func, times=None, *args):
+    """
+    >>> trepeatfunc(lambda : 1, times=3)
+    (1, 1, 1)
+    """
+    return tuple(repeatfunc(func, times=times, *args))
+
+
+def tgrouper(n, iterable, fillvalue=None):
+    """
+    >>> tgrouper(2, [1, 2, 3, 4, 5], 0)
+    ((1, 2), (3, 4), (5, 0))
+    """
+    return tuple(grouper(n, iterable, fillvalue=fillvalue))
+
+
+def troundrobin(*iterables):
+    """
+    >>> troundrobin([1, 2, 3], [4], [5, 6])
+    (1, 4, 5, 2, 6, 3)
+    """
+    return tuple(roundrobin(*iterables))
+
+
+def tsplitin(pred, iterable):
+    """
+    >>> tsplitin(lambda x: x % 2 == 0, [1, 2, 3, 4, 5])
+    ((1, 3, 5), (2, 4))
+    """
+    return tuple(map(tuple, splitin(pred, iterable)))
+
+
+def tsplitat(t, iterable):
+    """
+    >>> tsplitat(2, range(5))
+    ((0, 1), (2, 3, 4))
+    """
+    return tuple(map(tuple, splitat(t, iterable)))
+
+
+def tsplitby(pred, iterable):
+    """
+    >>> tsplitby(lambda x: x < 1, range(3))
+    ((0,), (1, 2))
+    """
+    return tuple(map(tuple, splitby(pred, iterable)))
+
+
+def tpowerset(iterable):
+    """
+    >>> tpowerset([1, 2, 3])
+    ((), (1,), (2,), (3,), (1, 2), (1, 3), (2, 3), (1, 2, 3))
+    """
+    return tuple(powerset(iterable))
+
+
+def tpairwise(iterable):
+    """
+    >>> tpairwise([1, 2, 3, 4])
+    ((1, 2), (2, 3), (3, 4))
+    """
+    return tuple(pairwise(iterable))
+
+
+def titer_except(func, exception, first_=None):
+    """
+    >>> d = {1: 1, 2: 2, 3: 3}
+    >>> titer_except(d.popitem, KeyError)
+    ((1, 1), (2, 2), (3, 3))
+    """
+    return tuple(iter_except(func, exception, first_=first_))
+
+
+def tflatten(items):
+    """
+    >>> tflatten([1, (2, 3), (4, 5, (6, (7, (8,))))])
+    (1, 2, 3, 4, 5, 6, 7, 8)
+    """
+    return tuple(flatten(items))
