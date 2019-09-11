@@ -2,9 +2,22 @@
 """ 补充扩展 fn 和 toolz 中没有的函数库 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals  # NOQA
+
+import platform
 from functools import partial
 from fn.monad import Full, Empty
+
 from toolz import complement, flip
+try:
+    try:
+        import cytoolz  # noqa
+    except ImportError:
+        pass
+    else:
+        if platform.python_implementation() == 'CPython':
+            from cytoolz.itertoolz import complement, flip  # noqa
+except Exception:
+    pass
 
 __all__ = ("is_none", "is_not_none", "is_option_full", "is_option_empty",
            "uppack_args")

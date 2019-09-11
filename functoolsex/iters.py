@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals  # NOQA
 
+import platform
 import heapq
 import operator
 from itertools import cycle, repeat, chain, dropwhile, takewhile, islice, \
@@ -10,10 +11,25 @@ from itertools import cycle, repeat, chain, dropwhile, takewhile, islice, \
 from pyrsistent import PList, PVector
 from toolz.compatibility import map, filterfalse, filter, range, \
     zip, zip_longest
-from toolz.itertoolz import no_default, remove, accumulate, merge_sorted, \
-    interleave, unique, take, tail, drop, take_nth, rest, concat, concatv, \
-    mapcat, cons, interpose, sliding_window, partition, no_pad, \
-    partition_all, pluck, diff, random_sample
+from toolz.itertoolz import (no_default, remove, accumulate, merge_sorted,
+                             interleave, unique, take, tail, drop, take_nth,
+                             rest, concat, concatv, mapcat, cons, interpose,
+                             sliding_window, partition, no_pad, partition_all,
+                             pluck, diff, random_sample)
+try:
+    try:
+        import cytoolz  # noqa
+    except ImportError:
+        pass
+    else:
+        if platform.python_implementation() == 'CPython':
+            from cytoolz.itertoolz import (  # noqa
+                no_default, remove, accumulate, merge_sorted, interleave,
+                unique, take, tail, drop, take_nth, rest, concat, concatv,
+                mapcat, cons, interpose, sliding_window, partition, no_pad,
+                partition_all, pluck, diff, random_sample)
+except Exception:
+    pass
 from fn.monad import Empty
 from fn.iters import compact, reject, ncycles, repeatfunc, grouper, \
     roundrobin, partition as splitin, splitat, splitby, powerset, pairwise, \
