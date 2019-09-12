@@ -15,7 +15,9 @@ from toolz.itertoolz import (no_default, remove, accumulate, merge_sorted,
                              interleave, unique, take, tail, drop, take_nth,
                              rest, concat, concatv, mapcat, cons, interpose,
                              sliding_window, partition, no_pad, partition_all,
-                             pluck, diff, random_sample)
+                             pluck, join, diff, random_sample)
+from toolz import identity, partitionby
+
 try:
     try:
         import cytoolz  # noqa
@@ -27,7 +29,8 @@ try:
                 no_default, remove, accumulate, merge_sorted, interleave,
                 unique, take, tail, drop, take_nth, rest, concat, concatv,
                 mapcat, cons, interpose, sliding_window, partition, no_pad,
-                partition_all, pluck, diff, random_sample)
+                partition_all, pluck, join, diff, random_sample)
+            from cytoolz import identity, partitionby  # noqa
 except Exception:
     pass
 from fn.monad import Empty
@@ -64,29 +67,31 @@ except ImportError:
             yield tuple(pool[i] for i in indices)
 
 
-__all__ = (
-    "combinations_with_replacement", "compress", "every", "first_object",
-    "first_option_full", "first_pred_object", "first_true", "getter",
-    "laccumulate", "lchain", "lcombinations", "lcombinations_with_replacement",
-    "lcompact", "lcompress", "lconcat", "lconcatv", "lcons", "lcycle", "ldiff",
-    "ldrop", "ldropwhile", "lfilter", "lfilterfalse", "lflatten", "lgrouper",
-    "linterleave", "linterpose", "lislice", "liter_except", "lmap", "lmapcat",
-    "lmerge_sorted", "lncycles", "lpairwise", "lpartition", "lpartition_all",
-    "lpermutations", "lpluck", "lpowerset", "lproduct", "lrandom_sample",
-    "lrange", "lreject", "lremove", "lrepeat", "lrepeatfunc", "lrest",
-    "lroundrobin", "lsliding_window", "lsplitat", "lsplitby", "lsplitin",
-    "lstarmap", "ltail", "ltake", "ltake_nth", "ltakewhile", "ltee", "ltopk",
-    "lunique", "lzip", "lzip_longest", "taccumulate", "tchain",
-    "tcombinations", "tcombinations_with_replacement", "tcompact", "tcompress",
-    "tconcat", "tconcatv", "tcons", "tcycle", "tdiff", "tdrop", "tdropwhile",
-    "tfilter", "tfilterfalse", "tflatten", "tgrouper", "tinterleave",
-    "tinterpose", "tislice", "titer_except", "tmap", "tmapcat",
-    "tmerge_sorted", "tncycles", "tpairwise", "tpartition", "tpartition_all",
-    "tpermutations", "tpluck", "tpowerset", "tproduct", "trandom_sample",
-    "trange", "treject", "tremove", "trepeat", "trepeatfunc", "trest",
-    "troundrobin", "tsliding_window", "tsplitat", "tsplitby", "tsplitin",
-    "tstarmap", "ttail", "ttake", "ttake_nth", "ttakewhile", "ttee", "ttopk",
-    "tunique", "tzip", "tzip_longest", "some")
+__all__ = ("combinations_with_replacement", "compress", "every",
+           "first_object", "first_option_full", "first_pred_object",
+           "first_true", "getter", "laccumulate", "lchain", "lcombinations",
+           "lcombinations_with_replacement", "lcompact", "lcompress",
+           "lconcat", "lconcatv", "lcons", "lcycle", "ldiff", "ldrop",
+           "ldropwhile", "lfilter", "lfilterfalse", "lflatten", "lgrouper",
+           "linterleave", "linterpose", "lislice", "liter_except", "lmap",
+           "lmapcat", "lmerge_sorted", "lncycles", "lpairwise", "lpartition",
+           "lpartition_all", "lpermutations", "lpluck", "ljoin", "lpowerset",
+           "lproduct", "lrandom_sample", "lpartitionby", "lrange", "lreject",
+           "lremove", "lrepeat", "lrepeatfunc", "lrest", "lroundrobin",
+           "lsliding_window", "lsplitat", "lsplitby", "lsplitin", "lstarmap",
+           "ltail", "ltake", "ltake_nth", "ltakewhile", "ltee", "ltopk",
+           "lunique", "lzip", "lzip_longest", "taccumulate", "tchain",
+           "tcombinations", "tcombinations_with_replacement", "tcompact",
+           "tcompress", "tconcat", "tconcatv", "tcons", "tcycle", "tdiff",
+           "tdrop", "tdropwhile", "tfilter", "tfilterfalse", "tflatten",
+           "tgrouper", "tinterleave", "tinterpose", "tislice", "titer_except",
+           "tmap", "tmapcat", "tmerge_sorted", "tncycles", "tpairwise",
+           "tpartition", "tpartition_all", "tpermutations", "tpluck", "tjoin",
+           "tpowerset", "tproduct", "trandom_sample", "tpartitionby", "trange",
+           "treject", "tremove", "trepeat", "trepeatfunc", "trest",
+           "troundrobin", "tsliding_window", "tsplitat", "tsplitby",
+           "tsplitin", "tstarmap", "ttail", "ttake", "ttake_nth", "ttakewhile",
+           "ttee", "ttopk", "tunique", "tzip", "tzip_longest", "some")
 
 
 def every(predicate, iterable):
@@ -141,7 +146,7 @@ def first_pred_object(iterable, pred=is_not_none):
     >>> from toolz.itertoolz import count
     >>> iter = repeat(1, 3)
     >>> first_pred_object(iter, lambda x: "not None")
-    u'not None'
+    'not None'
     >>> count(iter)
     2
     >>> iter = repeat(1, 3)
@@ -273,7 +278,7 @@ def lmapcat(func, seqs):
     """
     >>> lmapcat(lambda s: [c.upper() for c in s], \
                 [[u"a", u"b"], [u"c", u"d", u"e"]])
-    [u'A', u'B', u'C', u'D', u'E']
+    ['A', 'B', 'C', 'D', 'E']
     """
     return list(mapcat(func, seqs))
 
@@ -289,7 +294,7 @@ def lcons(el, seq):
 def linterpose(el, seq):
     """
     >>> linterpose(u"a", (1, 2, 3))
-    [1, u'a', 2, u'a', 3]
+    [1, 'a', 2, 'a', 3]
     """
     return list(interpose(el, seq))
 
@@ -328,11 +333,23 @@ def lpluck(ind, seqs, default=no_default):
     """
     >>> data = [{'id': 1, 'name': 'Cheese'}, {'id': 2, 'name': 'Pies'}]
     >>> lpluck('name', data)
-    [u'Cheese', u'Pies']
+    ['Cheese', 'Pies']
     >>> lpluck([0, 1], [[1, 2, 3], [4, 5, 7]])
     [(1, 2), (4, 5)]
     """
     return list(pluck(ind, seqs, default=default))
+
+
+def ljoin(leftkey, leftseq, rightkey, rightseq,
+          left_default=no_default, right_default=no_default):
+    """
+    >>> ljoin(identity, [1, 2, 3], identity, [2, 3, 4],
+    ...       left_default=None, right_default=None)
+    [(2, 2), (3, 3), (None, 4), (1, None)]
+    """
+    return list(
+        join(leftkey, leftseq, rightkey, rightseq,
+             left_default=left_default, right_default=right_default))
 
 
 def ldiff(*seqs, **kwargs):
@@ -341,8 +358,8 @@ def ldiff(*seqs, **kwargs):
     [(3, 10)]
     >>> ldiff([1, 2, 3], [1, 2, 10, 100], default=None)
     [(3, 10), (None, 100)]
-    >>> ldiff(['apples', 'bananas'], ['Apples', 'Oranges'], key=unicode.lower)
-    [(u'bananas', u'Oranges')]
+    >>> ldiff(['apples', 'bananas'], ['Apples', 'Oranges'], key=str.lower)
+    [('bananas', 'Oranges')]
     """
     return list(diff(*seqs, **kwargs))
 
@@ -352,14 +369,14 @@ def ltopk(k, seq, key=None):
     >>> ltopk(2, [1, 100, 10, 1000])
     [1000, 100]
     >>> ltopk(2, ['Alice', 'Bob', 'Charlie', 'Dan'], key=len)
-    [u'Charlie', u'Alice']
+    ['Charlie', 'Alice']
     """
     if key is not None and not callable(key):
         key = getter(key)
     return list(heapq.nlargest(k, seq, key=key))
 
 
-def lrandom_sample(prob, seq, random_state=None):
+def lrandom_sample(pred, seq, random_state=None):
     """
     >>> seq = list(range(100))
     >>> lrandom_sample(0.1, seq) # doctest: +SKIP
@@ -369,7 +386,19 @@ def lrandom_sample(prob, seq, random_state=None):
     >>> lrandom_sample(0.1, seq, random_state=2016)
     [7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98]
     """
-    return list(random_sample(prob, seq, random_state=random_state))
+    return list(random_sample(pred, seq, random_state=random_state))
+
+
+def lpartitionby(pred, seq):
+    """
+    >>> is_space = lambda c: c == " "
+    >>> lpartitionby(is_space, "I have space")
+    [('I',), (' ',), ('h', 'a', 'v', 'e'), (' ',), ('s', 'p', 'a', 'c', 'e')]
+    >>> is_large = lambda x: x > 10
+    >>> lpartitionby(is_large, [1, 2, 1, 99, 88, 33, 99, -1, 5])
+    [(1, 2, 1), (99, 88, 33, 99), (-1, 5)]
+    """
+    return list(partitionby(pred, seq))
 
 
 def lrange(*args, **kwargs):
@@ -414,7 +443,7 @@ def lchain(*iterables):
 def lcompress(data, selectors):
     """
     >>> lcompress('ABCDEF', [1, 0, 1, 0, 1, 1])
-    [u'A', u'C', u'E', u'F']
+    ['A', 'C', 'E', 'F']
     """
     return list(compress(data, selectors))
 
@@ -454,7 +483,7 @@ def lstarmap(function, iterable):
 def ltee(iterable, n=2):
     """
     >>> ltee("ABC")
-    [(u'A', u'B', u'C'), (u'A', u'B', u'C')]
+    [('A', 'B', 'C'), ('A', 'B', 'C')]
     """
     return list(map(tuple, tee(iterable, n)))
 
@@ -478,13 +507,13 @@ def lfilterfalse(predicate, iterable):
 def lislice(iterable, *args):
     """ (iterable, stop) or (iterable, start, stop[, step])
     >>> lislice('ABCDEFG', 2)
-    [u'A', u'B']
+    ['A', 'B']
     >>> lislice('ABCDEFG', 2, 4)
-    [u'C', u'D']
+    ['C', 'D']
     >>> lislice('ABCDEFG', 2, None)
-    [u'C', u'D', u'E', u'F', u'G']
+    ['C', 'D', 'E', 'F', 'G']
     >>> lislice('ABCDEFG', 0, None, 2)
-    [u'A', u'C', u'E', u'G']
+    ['A', 'C', 'E', 'G']
     """
     return list(islice(iterable, *args))
 
@@ -492,7 +521,7 @@ def lislice(iterable, *args):
 def lzip(*iterables):
     """
     >>> lzip('ABCD', 'xy')
-    [(u'A', u'x'), (u'B', u'y')]
+    [('A', 'x'), ('B', 'y')]
     """
     return list(zip(*iterables))
 
@@ -500,9 +529,9 @@ def lzip(*iterables):
 def lzip_longest(*args, **kwds):
     """
     >>> lzip_longest('ABCD', 'xy', fillvalue='-')
-    [(u'A', u'x'), (u'B', u'y'), (u'C', u'-'), (u'D', u'-')]
+    [('A', 'x'), ('B', 'y'), ('C', '-'), ('D', '-')]
     >>> lzip_longest('ABCD', 'xy')
-    [(u'A', u'x'), (u'B', u'y'), (u'C', None), (u'D', None)]
+    [('A', 'x'), ('B', 'y'), ('C', None), ('D', None)]
     """
     return list(zip_longest(*args, **kwds))
 
@@ -510,7 +539,7 @@ def lzip_longest(*args, **kwds):
 def lproduct(*args, **kwds):
     """
     >>> lproduct('ABC', 'xy')
-    [(u'A', u'x'), (u'A', u'y'), (u'B', u'x'), (u'B', u'y'), (u'C', u'x'), (u'C', u'y')]
+    [('A', 'x'), ('A', 'y'), ('B', 'x'), ('B', 'y'), ('C', 'x'), ('C', 'y')]
     """
     return list(product(*args, **kwds))
 
@@ -518,11 +547,11 @@ def lproduct(*args, **kwds):
 def lpermutations(iterable, r=None):
     """
     >>> lpermutations('ABC')
-    [(u'A', u'B', u'C'), (u'A', u'C', u'B'), (u'B', u'A', u'C'), (u'B', u'C', u'A'), (u'C', u'A', u'B'), (u'C', u'B', u'A')]
+    [('A', 'B', 'C'), ('A', 'C', 'B'), ('B', 'A', 'C'), ('B', 'C', 'A'), ('C', 'A', 'B'), ('C', 'B', 'A')]
     >>> lpermutations('ABC', 2)
-    [(u'A', u'B'), (u'A', u'C'), (u'B', u'A'), (u'B', u'C'), (u'C', u'A'), (u'C', u'B')]
+    [('A', 'B'), ('A', 'C'), ('B', 'A'), ('B', 'C'), ('C', 'A'), ('C', 'B')]
     >>> lpermutations('ABC', 3)
-    [(u'A', u'B', u'C'), (u'A', u'C', u'B'), (u'B', u'A', u'C'), (u'B', u'C', u'A'), (u'C', u'A', u'B'), (u'C', u'B', u'A')]
+    [('A', 'B', 'C'), ('A', 'C', 'B'), ('B', 'A', 'C'), ('B', 'C', 'A'), ('C', 'A', 'B'), ('C', 'B', 'A')]
     """
     return list(permutations(iterable, r))
 
@@ -532,13 +561,13 @@ def lcombinations(iterable, r):
     >>> lcombinations('ABCD', 0)
     [()]
     >>> lcombinations('ABCD', 1)
-    [(u'A',), (u'B',), (u'C',), (u'D',)]
+    [('A',), ('B',), ('C',), ('D',)]
     >>> lcombinations('ABCD', 2)
-    [(u'A', u'B'), (u'A', u'C'), (u'A', u'D'), (u'B', u'C'), (u'B', u'D'), (u'C', u'D')]
+    [('A', 'B'), ('A', 'C'), ('A', 'D'), ('B', 'C'), ('B', 'D'), ('C', 'D')]
     >>> lcombinations('ABCD', 3)
-    [(u'A', u'B', u'C'), (u'A', u'B', u'D'), (u'A', u'C', u'D'), (u'B', u'C', u'D')]
+    [('A', 'B', 'C'), ('A', 'B', 'D'), ('A', 'C', 'D'), ('B', 'C', 'D')]
     >>> lcombinations('ABCD', 4)
-    [(u'A', u'B', u'C', u'D')]
+    [('A', 'B', 'C', 'D')]
     >>> lcombinations('ABCD', 5)
     []
     """
@@ -550,15 +579,15 @@ def lcombinations_with_replacement(iterable, r):
     >>> lcombinations_with_replacement('ABCD', 0)
     [()]
     >>> lcombinations_with_replacement('ABCD', 1)
-    [(u'A',), (u'B',), (u'C',), (u'D',)]
+    [('A',), ('B',), ('C',), ('D',)]
     >>> lcombinations_with_replacement('ABCD', 2)
-    [(u'A', u'A'), (u'A', u'B'), (u'A', u'C'), (u'A', u'D'), (u'B', u'B'), (u'B', u'C'), (u'B', u'D'), (u'C', u'C'), (u'C', u'D'), (u'D', u'D')]
+    [('A', 'A'), ('A', 'B'), ('A', 'C'), ('A', 'D'), ('B', 'B'), ('B', 'C'), ('B', 'D'), ('C', 'C'), ('C', 'D'), ('D', 'D')]
     >>> lcombinations_with_replacement('ABCD', 3)
-    [(u'A', u'A', u'A'), (u'A', u'A', u'B'), (u'A', u'A', u'C'), (u'A', u'A', u'D'), (u'A', u'B', u'B'), (u'A', u'B', u'C'), (u'A', u'B', u'D'), (u'A', u'C', u'C'), (u'A', u'C', u'D'), (u'A', u'D', u'D'), (u'B', u'B', u'B'), (u'B', u'B', u'C'), (u'B', u'B', u'D'), (u'B', u'C', u'C'), (u'B', u'C', u'D'), (u'B', u'D', u'D'), (u'C', u'C', u'C'), (u'C', u'C', u'D'), (u'C', u'D', u'D'), (u'D', u'D', u'D')]
+    [('A', 'A', 'A'), ('A', 'A', 'B'), ('A', 'A', 'C'), ('A', 'A', 'D'), ('A', 'B', 'B'), ('A', 'B', 'C'), ('A', 'B', 'D'), ('A', 'C', 'C'), ('A', 'C', 'D'), ('A', 'D', 'D'), ('B', 'B', 'B'), ('B', 'B', 'C'), ('B', 'B', 'D'), ('B', 'C', 'C'), ('B', 'C', 'D'), ('B', 'D', 'D'), ('C', 'C', 'C'), ('C', 'C', 'D'), ('C', 'D', 'D'), ('D', 'D', 'D')]
     >>> lcombinations_with_replacement('ABCD', 4)
-    [(u'A', u'A', u'A', u'A'), (u'A', u'A', u'A', u'B'), (u'A', u'A', u'A', u'C'), (u'A', u'A', u'A', u'D'), (u'A', u'A', u'B', u'B'), (u'A', u'A', u'B', u'C'), (u'A', u'A', u'B', u'D'), (u'A', u'A', u'C', u'C'), (u'A', u'A', u'C', u'D'), (u'A', u'A', u'D', u'D'), (u'A', u'B', u'B', u'B'), (u'A', u'B', u'B', u'C'), (u'A', u'B', u'B', u'D'), (u'A', u'B', u'C', u'C'), (u'A', u'B', u'C', u'D'), (u'A', u'B', u'D', u'D'), (u'A', u'C', u'C', u'C'), (u'A', u'C', u'C', u'D'), (u'A', u'C', u'D', u'D'), (u'A', u'D', u'D', u'D'), (u'B', u'B', u'B', u'B'), (u'B', u'B', u'B', u'C'), (u'B', u'B', u'B', u'D'), (u'B', u'B', u'C', u'C'), (u'B', u'B', u'C', u'D'), (u'B', u'B', u'D', u'D'), (u'B', u'C', u'C', u'C'), (u'B', u'C', u'C', u'D'), (u'B', u'C', u'D', u'D'), (u'B', u'D', u'D', u'D'), (u'C', u'C', u'C', u'C'), (u'C', u'C', u'C', u'D'), (u'C', u'C', u'D', u'D'), (u'C', u'D', u'D', u'D'), (u'D', u'D', u'D', u'D')]
+    [('A', 'A', 'A', 'A'), ('A', 'A', 'A', 'B'), ('A', 'A', 'A', 'C'), ('A', 'A', 'A', 'D'), ('A', 'A', 'B', 'B'), ('A', 'A', 'B', 'C'), ('A', 'A', 'B', 'D'), ('A', 'A', 'C', 'C'), ('A', 'A', 'C', 'D'), ('A', 'A', 'D', 'D'), ('A', 'B', 'B', 'B'), ('A', 'B', 'B', 'C'), ('A', 'B', 'B', 'D'), ('A', 'B', 'C', 'C'), ('A', 'B', 'C', 'D'), ('A', 'B', 'D', 'D'), ('A', 'C', 'C', 'C'), ('A', 'C', 'C', 'D'), ('A', 'C', 'D', 'D'), ('A', 'D', 'D', 'D'), ('B', 'B', 'B', 'B'), ('B', 'B', 'B', 'C'), ('B', 'B', 'B', 'D'), ('B', 'B', 'C', 'C'), ('B', 'B', 'C', 'D'), ('B', 'B', 'D', 'D'), ('B', 'C', 'C', 'C'), ('B', 'C', 'C', 'D'), ('B', 'C', 'D', 'D'), ('B', 'D', 'D', 'D'), ('C', 'C', 'C', 'C'), ('C', 'C', 'C', 'D'), ('C', 'C', 'D', 'D'), ('C', 'D', 'D', 'D'), ('D', 'D', 'D', 'D')]
     >>> lcombinations_with_replacement('ABC', 4)
-    [(u'A', u'A', u'A', u'A'), (u'A', u'A', u'A', u'B'), (u'A', u'A', u'A', u'C'), (u'A', u'A', u'B', u'B'), (u'A', u'A', u'B', u'C'), (u'A', u'A', u'C', u'C'), (u'A', u'B', u'B', u'B'), (u'A', u'B', u'B', u'C'), (u'A', u'B', u'C', u'C'), (u'A', u'C', u'C', u'C'), (u'B', u'B', u'B', u'B'), (u'B', u'B', u'B', u'C'), (u'B', u'B', u'C', u'C'), (u'B', u'C', u'C', u'C'), (u'C', u'C', u'C', u'C')]
+    [('A', 'A', 'A', 'A'), ('A', 'A', 'A', 'B'), ('A', 'A', 'A', 'C'), ('A', 'A', 'B', 'B'), ('A', 'A', 'B', 'C'), ('A', 'A', 'C', 'C'), ('A', 'B', 'B', 'B'), ('A', 'B', 'B', 'C'), ('A', 'B', 'C', 'C'), ('A', 'C', 'C', 'C'), ('B', 'B', 'B', 'B'), ('B', 'B', 'B', 'C'), ('B', 'B', 'C', 'C'), ('B', 'C', 'C', 'C'), ('C', 'C', 'C', 'C')]
     """
     return list(combinations_with_replacement(iterable, r))
 
@@ -655,7 +684,7 @@ def liter_except(func, exception, first_=None):
     """
     >>> d = {1: 1, 2: 2, 3: 3}
     >>> liter_except(d.popitem, KeyError)
-    [(1, 1), (2, 2), (3, 3)]
+    [(3, 3), (2, 2), (1, 1)]
     """
     return list(iter_except(func, exception, first_=first_))
 
@@ -770,7 +799,7 @@ def tmapcat(func, seqs):
     """
     >>> tmapcat(lambda s: [c.upper() for c in s], \
                 [[u"a", u"b"], [u"c", u"d", u"e"]])
-    (u'A', u'B', u'C', u'D', u'E')
+    ('A', 'B', 'C', 'D', 'E')
     """
     return tuple(mapcat(func, seqs))
 
@@ -786,7 +815,7 @@ def tcons(el, seq):
 def tinterpose(el, seq):
     """
     >>> tinterpose(u"a", (1, 2, 3))
-    (1, u'a', 2, u'a', 3)
+    (1, 'a', 2, 'a', 3)
     """
     return tuple(interpose(el, seq))
 
@@ -825,11 +854,23 @@ def tpluck(ind, seqs, default=no_default):
     """
     >>> data = [{'id': 1, 'name': 'Cheese'}, {'id': 2, 'name': 'Pies'}]
     >>> tpluck('name', data)
-    (u'Cheese', u'Pies')
+    ('Cheese', 'Pies')
     >>> tpluck([0, 1], [[1, 2, 3], [4, 5, 7]])
     ((1, 2), (4, 5))
     """
     return tuple(pluck(ind, seqs, default=default))
+
+
+def tjoin(leftkey, leftseq, rightkey, rightseq,
+          left_default=no_default, right_default=no_default):
+    """
+    >>> tjoin(identity, [1, 2, 3], identity, [2, 3, 4],
+    ...       left_default=None, right_default=None)
+    ((2, 2), (3, 3), (None, 4), (1, None))
+    """
+    return tuple(
+        join(leftkey, leftseq, rightkey, rightseq,
+             left_default=left_default, right_default=right_default))
 
 
 def tdiff(*seqs, **kwargs):
@@ -838,8 +879,8 @@ def tdiff(*seqs, **kwargs):
     ((3, 10),)
     >>> tdiff([1, 2, 3], [1, 2, 10, 100], default=None)
     ((3, 10), (None, 100))
-    >>> tdiff(['apples', 'bananas'], ['Apples', 'Oranges'], key=unicode.lower)
-    ((u'bananas', u'Oranges'),)
+    >>> tdiff(['apples', 'bananas'], ['Apples', 'Oranges'], key=str.lower)
+    (('bananas', 'Oranges'),)
     """
     return tuple(diff(*seqs, **kwargs))
 
@@ -849,14 +890,14 @@ def ttopk(k, seq, key=None):
     >>> ttopk(2, [1, 100, 10, 1000])
     (1000, 100)
     >>> ttopk(2, ['Alice', 'Bob', 'Charlie', 'Dan'], key=len)
-    (u'Charlie', u'Alice')
+    ('Charlie', 'Alice')
     """
     if key is not None and not callable(key):
         key = getter(key)
     return tuple(heapq.nlargest(k, seq, key=key))
 
 
-def trandom_sample(prob, seq, random_state=None):
+def trandom_sample(pred, seq, random_state=None):
     """
     >>> seq = list(range(100))
     >>> trandom_sample(0.1, seq) # doctest: +SKIP
@@ -866,7 +907,19 @@ def trandom_sample(prob, seq, random_state=None):
     >>> trandom_sample(0.1, seq, random_state=2016)
     (7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98)
     """
-    return tuple(random_sample(prob, seq, random_state=random_state))
+    return tuple(random_sample(pred, seq, random_state=random_state))
+
+
+def tpartitionby(pred, seq):
+    """
+    >>> is_space = lambda c: c == " "
+    >>> tpartitionby(is_space, "I have space")
+    (('I',), (' ',), ('h', 'a', 'v', 'e'), (' ',), ('s', 'p', 'a', 'c', 'e'))
+    >>> is_large = lambda x: x > 10
+    >>> tpartitionby(is_large, [1, 2, 1, 99, 88, 33, 99, -1, 5])
+    ((1, 2, 1), (99, 88, 33, 99), (-1, 5))
+    """
+    return tuple(partitionby(pred, seq))
 
 
 def trange(*args, **kwargs):
@@ -911,7 +964,7 @@ def tchain(*iterables):
 def tcompress(data, selectors):
     """
     >>> tcompress('ABCDEF', [1, 0, 1, 0, 1, 1])
-    (u'A', u'C', u'E', u'F')
+    ('A', 'C', 'E', 'F')
     """
     return tuple(compress(data, selectors))
 
@@ -951,7 +1004,7 @@ def tstarmap(function, iterable):
 def ttee(iterable, n=2):
     """
     >>> ttee("ABC")
-    ((u'A', u'B', u'C'), (u'A', u'B', u'C'))
+    (('A', 'B', 'C'), ('A', 'B', 'C'))
     """
     return tuple(map(tuple, tee(iterable, n)))
 
@@ -975,13 +1028,13 @@ def tfilterfalse(predicate, iterable):
 def tislice(iterable, *args):
     """ (iterable, stop) or (iterable, start, stop[, step])
     >>> tislice('ABCDEFG', 2)
-    (u'A', u'B')
+    ('A', 'B')
     >>> tislice('ABCDEFG', 2, 4)
-    (u'C', u'D')
+    ('C', 'D')
     >>> tislice('ABCDEFG', 2, None)
-    (u'C', u'D', u'E', u'F', u'G')
+    ('C', 'D', 'E', 'F', 'G')
     >>> tislice('ABCDEFG', 0, None, 2)
-    (u'A', u'C', u'E', u'G')
+    ('A', 'C', 'E', 'G')
     """
     return tuple(islice(iterable, *args))
 
@@ -989,7 +1042,7 @@ def tislice(iterable, *args):
 def tzip(*iterables):
     """
     >>> tzip('ABCD', 'xy')
-    ((u'A', u'x'), (u'B', u'y'))
+    (('A', 'x'), ('B', 'y'))
     """
     return tuple(zip(*iterables))
 
@@ -997,9 +1050,9 @@ def tzip(*iterables):
 def tzip_longest(*args, **kwds):
     """
     >>> tzip_longest('ABCD', 'xy', fillvalue='-')
-    ((u'A', u'x'), (u'B', u'y'), (u'C', u'-'), (u'D', u'-'))
+    (('A', 'x'), ('B', 'y'), ('C', '-'), ('D', '-'))
     >>> tzip_longest('ABCD', 'xy')
-    ((u'A', u'x'), (u'B', u'y'), (u'C', None), (u'D', None))
+    (('A', 'x'), ('B', 'y'), ('C', None), ('D', None))
     """
     return tuple(zip_longest(*args, **kwds))
 
@@ -1007,7 +1060,7 @@ def tzip_longest(*args, **kwds):
 def tproduct(*args, **kwds):
     """
     >>> tproduct('ABC', 'xy')
-    ((u'A', u'x'), (u'A', u'y'), (u'B', u'x'), (u'B', u'y'), (u'C', u'x'), (u'C', u'y'))
+    (('A', 'x'), ('A', 'y'), ('B', 'x'), ('B', 'y'), ('C', 'x'), ('C', 'y'))
     """
     return tuple(product(*args, **kwds))
 
@@ -1015,11 +1068,11 @@ def tproduct(*args, **kwds):
 def tpermutations(iterable, r=None):
     """
     >>> tpermutations('ABC')
-    ((u'A', u'B', u'C'), (u'A', u'C', u'B'), (u'B', u'A', u'C'), (u'B', u'C', u'A'), (u'C', u'A', u'B'), (u'C', u'B', u'A'))
+    (('A', 'B', 'C'), ('A', 'C', 'B'), ('B', 'A', 'C'), ('B', 'C', 'A'), ('C', 'A', 'B'), ('C', 'B', 'A'))
     >>> tpermutations('ABC', 2)
-    ((u'A', u'B'), (u'A', u'C'), (u'B', u'A'), (u'B', u'C'), (u'C', u'A'), (u'C', u'B'))
+    (('A', 'B'), ('A', 'C'), ('B', 'A'), ('B', 'C'), ('C', 'A'), ('C', 'B'))
     >>> tpermutations('ABC', 3)
-    ((u'A', u'B', u'C'), (u'A', u'C', u'B'), (u'B', u'A', u'C'), (u'B', u'C', u'A'), (u'C', u'A', u'B'), (u'C', u'B', u'A'))
+    (('A', 'B', 'C'), ('A', 'C', 'B'), ('B', 'A', 'C'), ('B', 'C', 'A'), ('C', 'A', 'B'), ('C', 'B', 'A'))
     """
     return tuple(permutations(iterable, r))
 
@@ -1029,13 +1082,13 @@ def tcombinations(iterable, r):
     >>> tcombinations('ABCD', 0)
     ((),)
     >>> tcombinations('ABCD', 1)
-    ((u'A',), (u'B',), (u'C',), (u'D',))
+    (('A',), ('B',), ('C',), ('D',))
     >>> tcombinations('ABCD', 2)
-    ((u'A', u'B'), (u'A', u'C'), (u'A', u'D'), (u'B', u'C'), (u'B', u'D'), (u'C', u'D'))
+    (('A', 'B'), ('A', 'C'), ('A', 'D'), ('B', 'C'), ('B', 'D'), ('C', 'D'))
     >>> tcombinations('ABCD', 3)
-    ((u'A', u'B', u'C'), (u'A', u'B', u'D'), (u'A', u'C', u'D'), (u'B', u'C', u'D'))
+    (('A', 'B', 'C'), ('A', 'B', 'D'), ('A', 'C', 'D'), ('B', 'C', 'D'))
     >>> tcombinations('ABCD', 4)
-    ((u'A', u'B', u'C', u'D'),)
+    (('A', 'B', 'C', 'D'),)
     >>> tcombinations('ABCD', 5)
     ()
     """
@@ -1047,15 +1100,15 @@ def tcombinations_with_replacement(iterable, r):
     >>> tcombinations_with_replacement('ABCD', 0)
     ((),)
     >>> tcombinations_with_replacement('ABCD', 1)
-    ((u'A',), (u'B',), (u'C',), (u'D',))
+    (('A',), ('B',), ('C',), ('D',))
     >>> tcombinations_with_replacement('ABCD', 2)
-    ((u'A', u'A'), (u'A', u'B'), (u'A', u'C'), (u'A', u'D'), (u'B', u'B'), (u'B', u'C'), (u'B', u'D'), (u'C', u'C'), (u'C', u'D'), (u'D', u'D'))
+    (('A', 'A'), ('A', 'B'), ('A', 'C'), ('A', 'D'), ('B', 'B'), ('B', 'C'), ('B', 'D'), ('C', 'C'), ('C', 'D'), ('D', 'D'))
     >>> tcombinations_with_replacement('ABCD', 3)
-    ((u'A', u'A', u'A'), (u'A', u'A', u'B'), (u'A', u'A', u'C'), (u'A', u'A', u'D'), (u'A', u'B', u'B'), (u'A', u'B', u'C'), (u'A', u'B', u'D'), (u'A', u'C', u'C'), (u'A', u'C', u'D'), (u'A', u'D', u'D'), (u'B', u'B', u'B'), (u'B', u'B', u'C'), (u'B', u'B', u'D'), (u'B', u'C', u'C'), (u'B', u'C', u'D'), (u'B', u'D', u'D'), (u'C', u'C', u'C'), (u'C', u'C', u'D'), (u'C', u'D', u'D'), (u'D', u'D', u'D'))
+    (('A', 'A', 'A'), ('A', 'A', 'B'), ('A', 'A', 'C'), ('A', 'A', 'D'), ('A', 'B', 'B'), ('A', 'B', 'C'), ('A', 'B', 'D'), ('A', 'C', 'C'), ('A', 'C', 'D'), ('A', 'D', 'D'), ('B', 'B', 'B'), ('B', 'B', 'C'), ('B', 'B', 'D'), ('B', 'C', 'C'), ('B', 'C', 'D'), ('B', 'D', 'D'), ('C', 'C', 'C'), ('C', 'C', 'D'), ('C', 'D', 'D'), ('D', 'D', 'D'))
     >>> tcombinations_with_replacement('ABCD', 4)
-    ((u'A', u'A', u'A', u'A'), (u'A', u'A', u'A', u'B'), (u'A', u'A', u'A', u'C'), (u'A', u'A', u'A', u'D'), (u'A', u'A', u'B', u'B'), (u'A', u'A', u'B', u'C'), (u'A', u'A', u'B', u'D'), (u'A', u'A', u'C', u'C'), (u'A', u'A', u'C', u'D'), (u'A', u'A', u'D', u'D'), (u'A', u'B', u'B', u'B'), (u'A', u'B', u'B', u'C'), (u'A', u'B', u'B', u'D'), (u'A', u'B', u'C', u'C'), (u'A', u'B', u'C', u'D'), (u'A', u'B', u'D', u'D'), (u'A', u'C', u'C', u'C'), (u'A', u'C', u'C', u'D'), (u'A', u'C', u'D', u'D'), (u'A', u'D', u'D', u'D'), (u'B', u'B', u'B', u'B'), (u'B', u'B', u'B', u'C'), (u'B', u'B', u'B', u'D'), (u'B', u'B', u'C', u'C'), (u'B', u'B', u'C', u'D'), (u'B', u'B', u'D', u'D'), (u'B', u'C', u'C', u'C'), (u'B', u'C', u'C', u'D'), (u'B', u'C', u'D', u'D'), (u'B', u'D', u'D', u'D'), (u'C', u'C', u'C', u'C'), (u'C', u'C', u'C', u'D'), (u'C', u'C', u'D', u'D'), (u'C', u'D', u'D', u'D'), (u'D', u'D', u'D', u'D'))
+    (('A', 'A', 'A', 'A'), ('A', 'A', 'A', 'B'), ('A', 'A', 'A', 'C'), ('A', 'A', 'A', 'D'), ('A', 'A', 'B', 'B'), ('A', 'A', 'B', 'C'), ('A', 'A', 'B', 'D'), ('A', 'A', 'C', 'C'), ('A', 'A', 'C', 'D'), ('A', 'A', 'D', 'D'), ('A', 'B', 'B', 'B'), ('A', 'B', 'B', 'C'), ('A', 'B', 'B', 'D'), ('A', 'B', 'C', 'C'), ('A', 'B', 'C', 'D'), ('A', 'B', 'D', 'D'), ('A', 'C', 'C', 'C'), ('A', 'C', 'C', 'D'), ('A', 'C', 'D', 'D'), ('A', 'D', 'D', 'D'), ('B', 'B', 'B', 'B'), ('B', 'B', 'B', 'C'), ('B', 'B', 'B', 'D'), ('B', 'B', 'C', 'C'), ('B', 'B', 'C', 'D'), ('B', 'B', 'D', 'D'), ('B', 'C', 'C', 'C'), ('B', 'C', 'C', 'D'), ('B', 'C', 'D', 'D'), ('B', 'D', 'D', 'D'), ('C', 'C', 'C', 'C'), ('C', 'C', 'C', 'D'), ('C', 'C', 'D', 'D'), ('C', 'D', 'D', 'D'), ('D', 'D', 'D', 'D'))
     >>> tcombinations_with_replacement('ABC', 4)
-    ((u'A', u'A', u'A', u'A'), (u'A', u'A', u'A', u'B'), (u'A', u'A', u'A', u'C'), (u'A', u'A', u'B', u'B'), (u'A', u'A', u'B', u'C'), (u'A', u'A', u'C', u'C'), (u'A', u'B', u'B', u'B'), (u'A', u'B', u'B', u'C'), (u'A', u'B', u'C', u'C'), (u'A', u'C', u'C', u'C'), (u'B', u'B', u'B', u'B'), (u'B', u'B', u'B', u'C'), (u'B', u'B', u'C', u'C'), (u'B', u'C', u'C', u'C'), (u'C', u'C', u'C', u'C'))
+    (('A', 'A', 'A', 'A'), ('A', 'A', 'A', 'B'), ('A', 'A', 'A', 'C'), ('A', 'A', 'B', 'B'), ('A', 'A', 'B', 'C'), ('A', 'A', 'C', 'C'), ('A', 'B', 'B', 'B'), ('A', 'B', 'B', 'C'), ('A', 'B', 'C', 'C'), ('A', 'C', 'C', 'C'), ('B', 'B', 'B', 'B'), ('B', 'B', 'B', 'C'), ('B', 'B', 'C', 'C'), ('B', 'C', 'C', 'C'), ('C', 'C', 'C', 'C'))
     """
     return tuple(combinations_with_replacement(iterable, r))
 
@@ -1152,7 +1205,7 @@ def titer_except(func, exception, first_=None):
     """
     >>> d = {1: 1, 2: 2, 3: 3}
     >>> titer_except(d.popitem, KeyError)
-    ((1, 1), (2, 2), (3, 3))
+    ((3, 3), (2, 2), (1, 1))
     """
     return tuple(iter_except(func, exception, first_=first_))
 
