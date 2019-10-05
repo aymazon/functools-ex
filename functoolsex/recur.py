@@ -11,20 +11,22 @@ class tco_yield(object):
 
     Such function should return one of:
      * None - will exit from loop and stop iter
-     * (None, args) or (None, args, kwargs) - will repeat loop with the same
-                                              function and other arguments
-     * (func, args) or (func, args, kwargs) - will repeat loop with new
-                                              callable and new arguments
+     * (None, result, args) or (None, result, args, kwargs)
+     *  - will yield the result and repeat loop with the same
+          function and other arguments
+     * (func, result, args) or (func, result, args, kwargs)
+     *  - will yield the result and repeat loop
+     *    with new callable and new arguments
 
     Usage example:
 
     def read_line(fp):
         @recur.tco_yield
-        def go(fp):
+        def go():
             line = fp.readline()
             if line:
-                return None, line[:-1], (fp, )
-        return go(fp)
+                return None, line[:-1]
+        return go()
 
     with open('tmp.txt', 'r') as fp:
         return list(read_line(fp))
