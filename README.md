@@ -124,7 +124,7 @@ More info [fn.recur.tco](https://github.com/kachayev/fn.py#trampolines-decorator
 ```python
 >>> from functoolsex import tco_yield
 >>> def read_line(fp):
-...     @tco_yield()
+...     @tco_yield
 ...     def go(i):
 ...         line = fp.readline()
 ...         if line:
