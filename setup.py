@@ -5,8 +5,8 @@ from setuptools import setup
 
 
 setup(name='functoolsex',
-      version='0.0.11',
-      description='return ex(pyrsistent, fn, pytoolz, ...)',
+      version='0.1.0',
+      description='ex(pyrsistent, fn, pytoolz, ...) and faster on CPython and PyPy',
       url='https://github.com/aymazon/functools-ex',
       author='Tony L. Fan',
       author_email='aymazon@gmail.com',
@@ -23,7 +23,10 @@ setup(name='functoolsex',
           "Development Status :: 5 - Production/Stable",
           "License :: OSI Approved :: MIT License",
           "Programming Language :: Python",
-          "Programming Language :: Python :: 2.6",
-          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3.4",
+          "Programming Language :: Python :: 3.5",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
           "Programming Language :: Python :: Implementation :: CPython",
           "Programming Language :: Python :: Implementation :: PyPy"])

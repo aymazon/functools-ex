@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*
-""" 补充扩展 fn 和 toolz 中没有的递归处理工具库 """
-
 from __future__ import absolute_import, division, print_function, unicode_literals  # NOQA
 
 __all__ = ('tco_yield', )
@@ -21,16 +19,15 @@ class tco_yield(object):
     Usage example:
 
     def read_line(fp):
-        @recur.tco_yield
-        def go():
+        @tco_yield
+        def go(i):
             line = fp.readline()
             if line:
-                return None, line[:-1]
-        return go()
+                return None, f"{line[:-1]} {i}", (i + 1, )
+        return go(0)
 
     with open('tmp.txt', 'r') as fp:
-        return list(read_line(fp))
-
+        print(list(read_line(fp)))
     """
     __slots__ = "func",
 

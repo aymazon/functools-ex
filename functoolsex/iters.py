@@ -9,8 +9,7 @@ import operator
 from itertools import cycle, repeat, chain, dropwhile, takewhile, islice, \
     starmap, tee, product, permutations, combinations
 from pyrsistent import PList, PVector
-from toolz.compatibility import map, filterfalse, filter, range, \
-    zip, zip_longest
+from toolz.compatibility import *  # noqa
 from toolz.itertoolz import (no_default, remove, accumulate, merge_sorted,
                              interleave, unique, take, tail, drop, take_nth,
                              rest, concat, concatv, mapcat, cons, interpose,
