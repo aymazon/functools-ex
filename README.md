@@ -29,6 +29,7 @@ New functions:
 1. F, like [fn.F](https://github.com/kachayev/fn.py#high-level-operations-with-functions).
 
 ```python
+>>> from functoolsex import F
 >>> from functools import partial
 >>> from operator import add
 >>> F(add, 1)(2) == partial(add, 1)(2)
@@ -43,6 +44,7 @@ True
 1. FF, like [toolz.thread_last](https://github.com/pytoolz/toolz/blob/ea3ba0d60a33b256c8b2a7be43aff926992ffcdb/toolz/functoolz.py#L78).
 
 ```python
+>>> from functoolsex import FF
 >>> from operator import add, mul
 >>> inc = lambda x: x + 1
 >>> FF(2, inc, (mul, 3))
@@ -56,6 +58,7 @@ But not support (_ + _ and print its definition), because it is terribly slow.
 You can find more examples in functoolsex/tests.py.
 
 ```python
+from functoolsex import X
 class A():
     x = 'a'
 
@@ -69,7 +72,7 @@ assert (X[0][1] == 2)([(1, 2), (3, 4)])
 Run functions with the same args, support tuple partial.
 
 ```python
->>> from functoolsex import X
+>>> from functoolsex import R, X
 >>> from operator import add
 >>> from functools import partial
 >>> from toolz import juxt
@@ -103,6 +106,7 @@ True
 1. fold, like [toolz.sandbox.fold](https://github.com/pytoolz/toolz/blob/ea3ba0d60a33b256c8b2a7be43aff926992ffcdb/toolz/sandbox/parallel.py#L13), but as fast as reduce on PyPy.
 
 ```python
+>>> from functoolsex import fold
 >>> from operator import add
 >>> fold(add, range(10))
 45
@@ -118,6 +122,7 @@ True
 More info [fn.recur.tco](https://github.com/kachayev/fn.py#trampolines-decorator).
 
 ```python
+>>> from functoolsex import tco_yield
 >>> def read_line(fp):
 ...     @tco_yield()
 ...     def go(i):

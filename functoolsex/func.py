@@ -7,7 +7,7 @@ from fn.monad import Full, Empty
 from fn.func import identity
 from toolz.utils import no_default
 
-__all__ = ("flip", "F", "FF", "XClass", "op_set", "op_get", "fold",
+__all__ = ("flip", "F", "FF", "XClass", "op_set", "op_get", "R", "fold",
            "is_none", "is_not_none", "is_option_full", "is_option_empty",
            "uppack_args")
 

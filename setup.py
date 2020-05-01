@@ -5,7 +5,7 @@ from setuptools import setup
 
 
 setup(name='functoolsex',
-      version='0.1.0',
+      version='0.1.1',
       description='ex(pyrsistent, fn, pytoolz, ...) and faster on CPython and PyPy',
       url='https://github.com/aymazon/functools-ex',
       author='Tony L. Fan',
