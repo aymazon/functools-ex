@@ -1,7 +1,7 @@
 # functools-ex
 
 ## Instruction
-It depends on fn/toolz/pyrsistent, and provide faster implementation, especially on PyPy.
+It depends on fn/toolz/pyrsistent, and provides faster implementation, especially on PyPy.
 
 It is probably the fastest open-resource functional base functions on PyPy.
 
