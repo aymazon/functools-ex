@@ -7,9 +7,9 @@ from fn.monad import Full, Empty
 from fn.func import identity
 from toolz.utils import no_default
 
-__all__ = ("flip", "F", "FF", "XClass", "op_set", "op_get", "R", "fold",
-           "is_none", "is_not_none", "is_option_full", "is_option_empty",
-           "uppack_args")
+__all__ = ("flip", "F", "FF", "XClass", "op_filter", "op_map", "op_or_else",
+           "op_or_call", "op_get_or", "op_get_or_call", "R", "fold", "is_none",
+           "is_not_none", "is_option_full", "is_option_empty", "uppack_args")
 
 
 def flip(f):
@@ -385,22 +385,57 @@ class R(object):
         return tuple(result)
 
 
-def op_set(arg):
+__op_empty = '__functoolsex__op__empty'
+
+
+def op_filter(func, val):
     """Option filter map and get value, like Option in fn.
     >>> from functoolsex import F, X
     >>> from operator import add
-    >>> (F(op_set) >> (filter, X == 1) >> (map, F(add, 1)) >> (op_get, -1))(1)
-    2
-    >>> (F(op_set) >> (filter, X > 1) >> (map, F(add, 1)) >> (op_get, -1))(1)
+    >>> (F(op_filter, X == 1) >> (op_get_or, -1))(1)
+    1
+    >>> (F(op_filter, X > 1) >> (op_get_or, -1))(1)
     -1
+    >>> (F(op_filter, X == 1) >> (op_get_or_call, F(add, 0, -1)))(1)
+    1
+    >>> (F(op_filter, X > 1) >> (op_get_or_call, F(add, 0, -1)))(1)
+    -1
+    >>> (F(op_filter, X == 1) >> (op_map, X + 1) >> (op_get_or, -1))(1)
+    2
+    >>> (F(op_filter, X > 1) >> (op_map, X + 1) >> (op_get_or, -1))(1)
+    -1
+    >>> (F(op_filter, X == 1) >> (op_or_else, 2) >> (op_get_or, -1))(1)
+    1
+    >>> (F(op_filter, X > 1) >> (op_or_else, 2) >> (op_get_or, -1))(1)
+    2
+    >>> (F(op_filter, X == 1) >> (op_or_call, F(add, 1, 1)) >>
+    ...  (op_get_or, -1))(1)
+    1
+    >>> (F(op_filter, X > 1) >> (op_or_call, F(add, 1, 1)) >>
+    ...  (op_get_or, -1))(1)
+    2
     """
-    return (arg, )
+    return val if val != __op_empty and func(val) else __op_empty
 
 
-def op_get(default, func):
-    """It is related op_set"""
-    result = tuple(func)
-    return result[0] if result else default
+def op_map(func, val):
+    return func(val) if val != __op_empty else __op_empty
+
+
+def op_or_else(else_val, val):
+    return else_val if val == __op_empty else val
+
+
+def op_or_call(func, val):
+    return func() if val == __op_empty else val
+
+
+def op_get_or(default, val):
+    return default if val == __op_empty else val
+
+
+def op_get_or_call(func, val):
+    return func() if val == __op_empty else val
 
 
 def fold(binop, seq, default=no_default, map=map, pool_size=0, combine=None):

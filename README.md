@@ -14,7 +14,7 @@ Faster functions:
     ("flip", "F", "FF(thread_last)", "X(_)", "R(juxt)", "fold")
 
 New functions:
-    ("op_set", "op_get", "tco_yield")
+    ("op_filter", "op_map", "op_or_else", "op_or_call", "op_get_or", "op_get_or_call", "tco_yield")
 
 ## Exemples
 
@@ -92,15 +92,33 @@ True
 (1, 2)
 ```
 
-1. (op_set, op_get), provide filter ability, take the place of [fn.monad.Option](https://github.com/kachayev/fn.py#functional-style-for-error-handling).
+1. op, '>>' can format by editor, take the place of [fn.monad.Option](https://github.com/kachayev/fn.py#functional-style-for-error-handling).
 
 ```python
 >>> from functoolsex import F, X
 >>> from operator import add
->>> (F(op_set) >> (filter, X == 1) >> (map, F(add, 1)) >> (op_get, -1))(1)
-2
->>> (F(op_set) >> (filter, X > 1) >> (map, F(add, 1)) >> (op_get, -1))(1)
+>>> (F(op_filter, X == 1) >> (op_get_or, -1))(1)
+1
+>>> (F(op_filter, X > 1) >> (op_get_or, -1))(1)
 -1
+>>> (F(op_filter, X == 1) >> (op_get_or_call, F(add, 0, -1)))(1)
+1
+>>> (F(op_filter, X > 1) >> (op_get_or_call, F(add, 0, -1)))(1)
+-1
+>>> (F(op_filter, X == 1) >> (op_map, X + 1) >> (op_get_or, -1))(1)
+2
+>>> (F(op_filter, X > 1) >> (op_map, X + 1) >> (op_get_or, -1))(1)
+-1
+>>> (F(op_filter, X == 1) >> (op_or_else, 2) >> (op_get_or, -1))(1)
+1
+>>> (F(op_filter, X > 1) >> (op_or_else, 2) >> (op_get_or, -1))(1)
+2
+>>> (F(op_filter, X == 1) >> (op_or_call, F(add, 1, 1)) >>
+...  (op_get_or, -1))(1)
+1
+>>> (F(op_filter, X > 1) >> (op_or_call, F(add, 1, 1)) >>
+...  (op_get_or, -1))(1)
+2
 ```
 
 1. fold, like [toolz.sandbox.fold](https://github.com/pytoolz/toolz/blob/ea3ba0d60a33b256c8b2a7be43aff926992ffcdb/toolz/sandbox/parallel.py#L13), but as fast as reduce on PyPy.
