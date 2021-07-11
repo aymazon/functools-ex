@@ -121,6 +121,50 @@ True
 2
 ```
 
+
+1. Either like op, but support Exception.
+
+```python
+>>> from functoolsex import F, X
+>>> from operator import add
+>>> from toolz import excepts
+>>> (F(e_right) >> (e_filter, X == 1) >> (e_get_or, -1))(1)
+1
+>>> (F(e_filter, X > 1) >> (e_get_or, -1))(e_right(1))
+-1
+>>> (F(e_right) >> (e_filter, X == 1) >> (e_get_or_call, F(add, 0, -1)))(1)
+1
+>>> (F(e_right) >> (e_filter, X > 1) >> (e_get_or_call, F(add, 0, -1)))(1)
+-1
+>>> (F(e_right) >> (e_filter, X == 1) >>
+...    (e_map, excepts(ZeroDivisionError, F(1 // X) >> e_right, e_left)) >> (e_get_or, -1))(1)
+1
+>>> (F(e_right) >> (e_filter, X == 1) >>
+...    (e_map, excepts(ZeroDivisionError, F(1 // X) >> e_right, e_left)) >> (e_get_or, -1))(0)
+-1
+>>> (excepts(ZeroDivisionError, (F(e_right) >> (e_filter, X == 0) >>
+...    (e_map, excepts(ZeroDivisionError, F(1 // X) >> e_right, e_left)) >> (e_get_or_raise)), str)(0) ==
+... 'integer division or modulo by zero')
+True
+>>> (F(e_right) >> (e_filter, X == 1) >> e_get_right)(1)
+1
+>>> (excepts(ValueError, (F(e_right) >> (e_filter, X > 1) >> e_get_right), str)(1) ==
+...    "('__functoolsex__e__left', None) is not either right")
+True
+>>> ((F(e_right) >> (e_filter, X > 1) >> (e_get_left))(1)) is None
+True
+>>> (F(e_right) >> (e_filter, X == 1) >> (e_or_else, e_right(2)) >> (e_get_or, -1))(1)
+1
+>>> (F(e_right) >> (e_filter, X > 1) >> (e_or_else, e_right(2)) >> (e_get_or, -1))(1)
+2
+>>> (F(e_right) >> (e_filter, X == 1) >> (e_or_call, (F(add, 1, 1) >> e_right)) >>
+...  (e_get_or, -1))(1)
+1
+>>> (F(e_right) >> (e_filter, X > 1) >> (e_or_call, (F(add, 1, 1) >> e_right)) >>
+...  (e_get_or, -1))(1)
+2
+```
+
 1. fold, like [toolz.sandbox.fold](https://github.com/pytoolz/toolz/blob/ea3ba0d60a33b256c8b2a7be43aff926992ffcdb/toolz/sandbox/parallel.py#L13), but as fast as reduce on PyPy.
 
 ```python

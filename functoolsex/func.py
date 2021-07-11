@@ -7,9 +7,8 @@ from fn.monad import Full, Empty
 from fn.func import identity
 from toolz.utils import no_default
 
-__all__ = ("flip", "F", "FF", "XClass", "op_filter", "op_map", "op_or_else",
-           "op_or_call", "op_get_or", "op_get_or_call", "R", "fold", "is_none",
-           "is_not_none", "is_option_full", "is_option_empty", "uppack_args")
+__all__ = ("flip", "F", "FF", "XClass", "op_filter", "op_map", "op_or_else", "op_or_call", "op_get_or",
+           "op_get_or_call", "R", "fold", "is_none", "is_not_none", "is_option_full", "is_option_empty", "uppack_args")
 
 
 def flip(f):
@@ -43,16 +42,14 @@ class F(object):
 
     def __rshift__(self, g):
         if not callable(g):
-            f, self.f = self.f, lambda *args, **kwargs: g[0](*(g[1:] + (f(
-                *args, **kwargs), )))
+            f, self.f = self.f, lambda *args, **kwargs: g[0](*(g[1:] + (f(*args, **kwargs), )))
         else:
             f, self.f = self.f, lambda *args, **kwargs: g(f(*args, **kwargs))
         return self
 
     def __lshift__(self, g):
         if not callable(g):
-            f, self.f = self.f, lambda *args, **kwargs: f(g[0](*(g[1:] + args),
-                                                               **kwargs))
+            f, self.f = self.f, lambda *args, **kwargs: f(g[0](*(g[1:] + args), **kwargs))
         else:
             f, self.f = self.f, lambda *args, **kwargs: f(g(*args, **kwargs))
         return self
@@ -419,7 +416,7 @@ def op_filter(func, val):
 
 
 def op_map(func, val):
-    return func(val) if val != __op_empty else __op_empty
+    return func(val) if val != __op_empty else val
 
 
 def op_or_else(else_val, val):
@@ -436,6 +433,110 @@ def op_get_or(default, val):
 
 def op_get_or_call(func, val):
     return func() if val == __op_empty else val
+
+
+__e_left = '__functoolsex__e__left'
+__e_right = '__functoolsex__e__right'
+
+
+def e_filter(func, val):
+    """Either filter map and get value, like op, but support Exception.
+    >>> from functoolsex import F, X
+    >>> from operator import add
+    >>> from toolz import excepts
+    >>> (F(e_right) >> (e_filter, X == 1) >> (e_get_or, -1))(1)
+    1
+    >>> (F(e_filter, X > 1) >> (e_get_or, -1))(e_right(1))
+    -1
+    >>> (F(e_right) >> (e_filter, X == 1) >> (e_get_or_call, F(add, 0, -1)))(1)
+    1
+    >>> (F(e_right) >> (e_filter, X > 1) >> (e_get_or_call, F(add, 0, -1)))(1)
+    -1
+    >>> (F(e_right) >> (e_filter, X == 1) >>
+    ...    (e_map, excepts(ZeroDivisionError, F(1 // X) >> e_right, e_left)) >> (e_get_or, -1))(1)
+    1
+    >>> (F(e_right) >> (e_filter, X == 1) >>
+    ...    (e_map, excepts(ZeroDivisionError, F(1 // X) >> e_right, e_left)) >> (e_get_or, -1))(0)
+    -1
+    >>> (excepts(ZeroDivisionError, (F(e_right) >> (e_filter, X == 0) >>
+    ...    (e_map, excepts(ZeroDivisionError, F(1 // X) >> e_right, e_left)) >> (e_get_or_raise)), str)(0) ==
+    ... 'integer division or modulo by zero')
+    True
+    >>> (F(e_right) >> (e_filter, X == 1) >> e_get_right)(1)
+    1
+    >>> (excepts(ValueError, (F(e_right) >> (e_filter, X > 1) >> e_get_right), str)(1) == "('__functoolsex__e__left', None) is not either right")
+    True
+    >>> ((F(e_right) >> (e_filter, X > 1) >> (e_get_left))(1)) is None
+    True
+    >>> (F(e_right) >> (e_filter, X == 1) >> (e_or_else, e_right(2)) >> (e_get_or, -1))(1)
+    1
+    >>> (F(e_right) >> (e_filter, X > 1) >> (e_or_else, e_right(2)) >> (e_get_or, -1))(1)
+    2
+    >>> (F(e_right) >> (e_filter, X == 1) >> (e_or_call, (F(add, 1, 1) >> e_right)) >>
+    ...  (e_get_or, -1))(1)
+    1
+    >>> (F(e_right) >> (e_filter, X > 1) >> (e_or_call, (F(add, 1, 1) >> e_right)) >>
+    ...  (e_get_or, -1))(1)
+    2
+    """
+    return val if e_is_right(val) and func(val[1]) else e_left()
+
+
+def e_left(val=None):
+    return (__e_left, val)
+
+
+def e_right(val):
+    return (__e_right, val)
+
+
+def e_is_left(val):
+    return val[0] != __e_right
+
+
+def e_is_right(val):
+    return val[0] != __e_left
+
+
+def e_map(func, val):
+    return func(val[1]) if e_is_right(val) else val
+
+
+def e_or_else(else_val, val):
+    return else_val if e_is_left(val) else val
+
+
+def e_or_call(func, val):
+    return func() if e_is_left(val) else val
+
+
+def e_get_or(default, val):
+    return default if e_is_left(val) else val[1]
+
+
+def e_get_or_call(func, val):
+    return func() if e_is_left(val) else val[1]
+
+
+def e_get_or_raise(val):
+    if e_is_left(val):
+        raise (val[1])
+    else:
+        val[1]
+
+
+def e_get_left(val):
+    if e_is_left(val):
+        return val[1]
+    else:
+        raise ValueError("%s is not either left" % (val, ))
+
+
+def e_get_right(val):
+    if e_is_right(val):
+        return val[1]
+    else:
+        raise ValueError("%s is not either right" % (val, ))
 
 
 def fold(binop, seq, default=no_default, map=map, pool_size=0, combine=None):
