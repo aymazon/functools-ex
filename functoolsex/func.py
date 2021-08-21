@@ -36,8 +36,8 @@ class F(object):
     """
     __slots__ = "f",
 
-    def __init__(self, f=identity, *args, **kwargs):
-        self.f = partial(f, *args, **kwargs) if args or kwargs else f
+    def __init__(self, __functoolsex__F_f=identity, *args, **kwargs):
+        self.f = partial(__functoolsex__F_f, *args, **kwargs) if args or kwargs else __functoolsex__F_f
 
     def __call__(self, *args, **kwargs):
         return self.f(*args, **kwargs)
@@ -90,8 +90,8 @@ class XClass(object):
     """
     __slots__ = "f",
 
-    def __init__(self, f=None):
-        self.f = f
+    def __init__(self, __functoolsex__X_f=None):
+        self.f = __functoolsex__X_f
 
     def __call__(self, *args, **kwargs):
         return self.f(*args, **kwargs)
