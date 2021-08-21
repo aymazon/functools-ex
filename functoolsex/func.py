@@ -8,7 +8,9 @@ from fn.func import identity
 from toolz.utils import no_default
 
 __all__ = ("flip", "F", "FF", "XClass", "op_filter", "op_map", "op_or_else", "op_or_call", "op_get_or",
-           "op_get_or_call", "R", "fold", "is_none", "is_not_none", "is_option_full", "is_option_empty", "uppack_args")
+           "op_get_or_call", "e_filter", "e_left", "e_right", "e_is_left", "e_is_right", "e_map", "e_or_else",
+           "e_or_call", "e_get_or", "e_get_or_call", "e_get_or_raise", "e_get_left", "e_get_right", "R", "fold",
+           "is_none", "is_not_none", "is_option_full", "is_option_empty", "uppack_args")
 
 
 def flip(f):

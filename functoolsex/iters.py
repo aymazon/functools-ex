@@ -10,11 +10,9 @@ from itertools import cycle, repeat, chain, dropwhile, takewhile, islice, \
     starmap, tee, product, permutations, combinations
 from pyrsistent import PList, PVector
 from toolz.compatibility import *  # noqa
-from toolz.itertoolz import (no_default, remove, accumulate, merge_sorted,
-                             interleave, unique, take, tail, drop, take_nth,
-                             rest, concat, concatv, mapcat, cons, interpose,
-                             sliding_window, partition, no_pad, partition_all,
-                             pluck, join, diff, random_sample)
+from toolz.itertoolz import (no_default, remove, accumulate, merge_sorted, interleave, unique, take, tail, drop,
+                             take_nth, rest, concat, concatv, mapcat, cons, interpose, sliding_window, partition,
+                             no_pad, partition_all, pluck, join, diff, random_sample)
 from toolz import identity, partitionby
 
 try:
@@ -25,10 +23,9 @@ try:
     else:
         if platform.python_implementation() == 'CPython':
             from cytoolz.itertoolz import (  # noqa
-                no_default, remove, accumulate, merge_sorted, interleave,
-                unique, take, tail, drop, take_nth, rest, concat, concatv,
-                mapcat, cons, interpose, sliding_window, partition, no_pad,
-                partition_all, pluck, join, diff, random_sample)
+                no_default, remove, accumulate, merge_sorted, interleave, unique, take, tail, drop, take_nth, rest,
+                concat, concatv, mapcat, cons, interpose, sliding_window, partition, no_pad, partition_all, pluck, join,
+                diff, random_sample)
             from cytoolz import identity, partitionby  # noqa
 except Exception:
     pass
@@ -44,11 +41,11 @@ try:
     from itertools import compress, combinations_with_replacement
 except ImportError:
 
-    def compress(data, selectors):
+    def compress(data, selectors):  # type: ignore
         # compress('ABCDEF', [1,0,1,0,1,1]) --> A C E F
         return (d for d, s in zip(data, selectors) if s)
 
-    def combinations_with_replacement(iterable, r):
+    def combinations_with_replacement(iterable, r):  # type: ignore
         # combinations_with_replacement('ABC', 2) --> AA AB AC BB BC CC
         pool = tuple(iterable)
         n = len(pool)
@@ -66,31 +63,22 @@ except ImportError:
             yield tuple(pool[i] for i in indices)
 
 
-__all__ = ("combinations_with_replacement", "compress", "every",
-           "first_object", "first_option_full", "first_pred_object",
-           "first_true", "getter", "laccumulate", "lchain", "lcombinations",
-           "lcombinations_with_replacement", "lcompact", "lcompress",
-           "lconcat", "lconcatv", "lcons", "lcycle", "ldiff", "ldrop",
-           "ldropwhile", "lfilter", "lfilterfalse", "lflatten", "lgrouper",
-           "linterleave", "linterpose", "lislice", "liter_except", "lmap",
-           "lmapcat", "lmerge_sorted", "lncycles", "lpairwise", "lpartition",
-           "lpartition_all", "lpermutations", "lpluck", "ljoin", "lpowerset",
-           "lproduct", "lrandom_sample", "lpartitionby", "lrange", "lreject",
-           "lremove", "lrepeat", "lrepeatfunc", "lrest", "lroundrobin",
-           "lsliding_window", "lsplitat", "lsplitby", "lsplitin", "lstarmap",
-           "ltail", "ltake", "ltake_nth", "ltakewhile", "ltee", "ltopk",
-           "lunique", "lzip", "lzip_longest", "taccumulate", "tchain",
-           "tcombinations", "tcombinations_with_replacement", "tcompact",
-           "tcompress", "tconcat", "tconcatv", "tcons", "tcycle", "tdiff",
-           "tdrop", "tdropwhile", "tfilter", "tfilterfalse", "tflatten",
-           "tgrouper", "tinterleave", "tinterpose", "tislice", "titer_except",
-           "tmap", "tmapcat", "tmerge_sorted", "tncycles", "tpairwise",
-           "tpartition", "tpartition_all", "tpermutations", "tpluck", "tjoin",
-           "tpowerset", "tproduct", "trandom_sample", "tpartitionby", "trange",
-           "treject", "tremove", "trepeat", "trepeatfunc", "trest",
-           "troundrobin", "tsliding_window", "tsplitat", "tsplitby",
-           "tsplitin", "tstarmap", "ttail", "ttake", "ttake_nth", "ttakewhile",
-           "ttee", "ttopk", "tunique", "tzip", "tzip_longest", "some")
+__all__ = ("combinations_with_replacement", "compress", "every", "first_object", "first_option_full",
+           "first_pred_object", "first_true", "getter", "map_call", "lmap_call", "tmap_call", "laccumulate", "lchain",
+           "lcombinations", "lcombinations_with_replacement", "lcompact", "lcompress", "lconcat", "lconcatv", "lcons",
+           "lcycle", "ldiff", "ldrop", "ldropwhile", "lfilter", "lfilterfalse", "lflatten", "lgrouper", "linterleave",
+           "linterpose", "lislice", "liter_except", "lmap", "lmapcat", "lmerge_sorted", "lncycles", "lpairwise",
+           "lpartition", "lpartition_all", "lpermutations", "lpluck", "ljoin", "lpowerset", "lproduct",
+           "lrandom_sample", "lpartitionby", "lrange", "lreject", "lremove", "lrepeat", "lrepeatfunc", "lrest",
+           "lroundrobin", "lsliding_window", "lsplitat", "lsplitby", "lsplitin", "lstarmap", "ltail", "ltake",
+           "ltake_nth", "ltakewhile", "ltee", "ltopk", "lunique", "lzip", "lzip_longest", "taccumulate", "tchain",
+           "tcombinations", "tcombinations_with_replacement", "tcompact", "tcompress", "tconcat", "tconcatv", "tcons",
+           "tcycle", "tdiff", "tdrop", "tdropwhile", "tfilter", "tfilterfalse", "tflatten", "tgrouper", "tinterleave",
+           "tinterpose", "tislice", "titer_except", "tmap", "tmapcat", "tmerge_sorted", "tncycles", "tpairwise",
+           "tpartition", "tpartition_all", "tpermutations", "tpluck", "tjoin", "tpowerset", "tproduct",
+           "trandom_sample", "tpartitionby", "trange", "treject", "tremove", "trepeat", "trepeatfunc", "trest",
+           "troundrobin", "tsliding_window", "tsplitat", "tsplitby", "tsplitin", "tstarmap", "ttail", "ttake",
+           "ttake_nth", "ttakewhile", "ttee", "ttopk", "tunique", "tzip", "tzip_longest", "some")
 
 
 def every(predicate, iterable):
@@ -173,6 +161,40 @@ def getter(index):
             return lambda x: ()
     else:
         return operator.itemgetter(index)
+
+
+def map_call(func, args_seq):
+    """map every func call and no return
+    >>> map_call(print, [(1, 2), (3, 4)])
+    1 2
+    3 4
+    """
+    for args in args_seq:
+        func(*args)
+
+
+def lmap_call(func, args_seq):
+    """map every func call and return list result
+    >>> from operator import add
+    >>> lmap_call(add, [(1, 2), (3, 4)])
+    [3, 7]
+    """
+    result = []
+    for args in args_seq:
+        result.append(func(*args))
+    return result
+
+
+def tmap_call(func, args_seq):
+    """map every func call and return tuple result
+    >>> from operator import add
+    >>> tmap_call(add, [(1, 2), (3, 4)])
+    (3, 7)
+    """
+    result = ()
+    for args in args_seq:
+        result += (func(*args), )
+    return result
 
 
 def lremove(predicate, seq):
@@ -339,16 +361,13 @@ def lpluck(ind, seqs, default=no_default):
     return list(pluck(ind, seqs, default=default))
 
 
-def ljoin(leftkey, leftseq, rightkey, rightseq,
-          left_default=no_default, right_default=no_default):
+def ljoin(leftkey, leftseq, rightkey, rightseq, left_default=no_default, right_default=no_default):
     """
     >>> ljoin(identity, [1, 2, 3], identity, [2, 3, 4],
     ...       left_default=None, right_default=None)
     [(2, 2), (3, 3), (None, 4), (1, None)]
     """
-    return list(
-        join(leftkey, leftseq, rightkey, rightseq,
-             left_default=left_default, right_default=right_default))
+    return list(join(leftkey, leftseq, rightkey, rightseq, left_default=left_default, right_default=right_default))
 
 
 def ldiff(*seqs, **kwargs):
@@ -860,16 +879,13 @@ def tpluck(ind, seqs, default=no_default):
     return tuple(pluck(ind, seqs, default=default))
 
 
-def tjoin(leftkey, leftseq, rightkey, rightseq,
-          left_default=no_default, right_default=no_default):
+def tjoin(leftkey, leftseq, rightkey, rightseq, left_default=no_default, right_default=no_default):
     """
     >>> tjoin(identity, [1, 2, 3], identity, [2, 3, 4],
     ...       left_default=None, right_default=None)
     ((2, 2), (3, 3), (None, 4), (1, None))
     """
-    return tuple(
-        join(leftkey, leftseq, rightkey, rightseq,
-             left_default=left_default, right_default=right_default))
+    return tuple(join(leftkey, leftseq, rightkey, rightseq, left_default=left_default, right_default=right_default))
 
 
 def tdiff(*seqs, **kwargs):
