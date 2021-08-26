@@ -11,7 +11,7 @@ but I do not think that is necessary, before your doing, read about performance,
 
 
 Faster functions:
-    ("flip", "F", "FF(thread_last)", "X(_)", "R(juxt)", "fold")
+    ("flip", "C", "F", "FF(thread_last)", "X(_)", "R(juxt)", "fold")
 
 New functions:
     ("op_filter", "op_map", "op_or_else", "op_or_call", "op_get_or", "op_get_or_call", "tco_yield")
@@ -26,30 +26,48 @@ New functions:
 -1
 ```
 
+1. P, just alias to functools partial
+
+1. C, Curry a function.
+```python
+>>> from functoolsex import C
+>>> sum_func = lambda x, y, z: x + y + z
+>>> sum_C = C(sum_func, 3)
+>>> sum_C(1, 2, 3)
+6
+>>> sum_C(1, 2)(3)
+6
+>>> sum_C(1)(2)(3)
+6
+>>> sum_C = C(sum_func, 3)
+>>> sum_C(1)(2)(3)
+6
+```
+
 1. F, like [fn.F](https://github.com/kachayev/fn.py#high-level-operations-with-functions).
 
 ```python
->>> from functoolsex import F
+>>> from functoolsex import F, P
 >>> from functools import partial
 >>> from operator import add
 >>> F(add, 1)(2) == partial(add, 1)(2)
 True
 >>> from operator import add, mul
->>> (F(add, 1) >> (mul, 3))(2)
+>>> (F(add, 1) >> P(mul, 3))(2)
 9
->>> (F(add, 1) << (mul, 3))(2)
+>>> (F(add, 1) << P(mul, 3))(2)
 7
 ```
 
 1. FF, like [toolz.thread_last](https://github.com/pytoolz/toolz/blob/ea3ba0d60a33b256c8b2a7be43aff926992ffcdb/toolz/functoolz.py#L78).
 
 ```python
->>> from functoolsex import FF
+>>> from functoolsex import FF, P
 >>> from operator import add, mul
 >>> inc = lambda x: x + 1
->>> FF(2, inc, (mul, 3))
+>>> FF(2, inc, P(mul, 3))
 9
->>> FF(2, (mul, 3), inc)
+>>> FF(2, P(mul, 3), inc)
 7
 ```
 
@@ -69,18 +87,18 @@ assert (X[0][1] == 2)([(1, 2), (3, 4)])
 ```
 
 1. R, like [toolz.juxt](https://github.com/pytoolz/toolz/blob/ea3ba0d60a33b256c8b2a7be43aff926992ffcdb/toolz/functoolz.py#L646).
-Run functions with the same args, support tuple partial.
+Run functions with the same args.
 
 ```python
->>> from functoolsex import R, X
+>>> from functoolsex import R, X, P
 >>> from operator import add
 >>> from functools import partial
 >>> from toolz import juxt
->>> R(X + 1, (add, 1))(2)
+>>> R(X + 1, P(add, 1))(2)
 (3, 3)
->>> R(X + 1, (add, 1))(2) == juxt(X + 1, partial(add, 1))(2)
+>>> R(X + 1, P(add, 1))(2) == juxt(X + 1, partial(add, 1))(2)
 True
->>> R(X + 1, (add, 1))(2) == ((X + 1)(2), add(1, 2))
+>>> R(X + 1, P(add, 1))(2) == ((X + 1)(2), add(1, 2))
 True
 >>> def func(a, b):
 ...     def fa():
@@ -95,29 +113,29 @@ True
 1. op, '>>' can format by editor, take the place of [fn.monad.Option](https://github.com/kachayev/fn.py#functional-style-for-error-handling).
 
 ```python
->>> from functoolsex import F, X
+>>> from functoolsex import F, X, P
 >>> from operator import add
->>> (F(op_filter, X == 1) >> (op_get_or, -1))(1)
+>>> (F(op_filter, X == 1) >> P(op_get_or, -1))(1)
 1
->>> (F(op_filter, X > 1) >> (op_get_or, -1))(1)
+>>> (F(op_filter, X > 1) >> P(op_get_or, -1))(1)
 -1
->>> (F(op_filter, X == 1) >> (op_get_or_call, F(add, 0, -1)))(1)
+>>> (F(op_filter, X == 1) >> P(op_get_or_call, F(add, 0, -1)))(1)
 1
->>> (F(op_filter, X > 1) >> (op_get_or_call, F(add, 0, -1)))(1)
+>>> (F(op_filter, X > 1) >> P(op_get_or_call, F(add, 0, -1)))(1)
 -1
->>> (F(op_filter, X == 1) >> (op_map, X + 1) >> (op_get_or, -1))(1)
+>>> (F(op_filter, X == 1) >> P(op_map, X + 1) >> P(op_get_or, -1))(1)
 2
->>> (F(op_filter, X > 1) >> (op_map, X + 1) >> (op_get_or, -1))(1)
+>>> (F(op_filter, X > 1) >> P(op_map, X + 1) >> P(op_get_or, -1))(1)
 -1
->>> (F(op_filter, X == 1) >> (op_or_else, 2) >> (op_get_or, -1))(1)
+>>> (F(op_filter, X == 1) >> P(op_or_else, 2) >> P(op_get_or, -1))(1)
 1
->>> (F(op_filter, X > 1) >> (op_or_else, 2) >> (op_get_or, -1))(1)
+>>> (F(op_filter, X > 1) >> P(op_or_else, 2) >> P(op_get_or, -1))(1)
 2
->>> (F(op_filter, X == 1) >> (op_or_call, F(add, 1, 1)) >>
-...  (op_get_or, -1))(1)
+>>> (F(op_filter, X == 1) >> P(op_or_call, F(add, 1, 1)) >>
+...  P(op_get_or, -1))(1)
 1
->>> (F(op_filter, X > 1) >> (op_or_call, F(add, 1, 1)) >>
-...  (op_get_or, -1))(1)
+>>> (F(op_filter, X > 1) >> P(op_or_call, F(add, 1, 1)) >>
+...  P(op_get_or, -1))(1)
 2
 ```
 
@@ -125,43 +143,42 @@ True
 1. Either like op, but support Exception.
 
 ```python
->>> from functoolsex import F, X
+>>> from functoolsex import F, X, P
 >>> from operator import add
 >>> from toolz import excepts
->>> (F(e_right) >> (e_filter, X == 1) >> (e_get_or, -1))(1)
+>>> (F(e_right) >> P(e_filter, X == 1) >> P(e_get_or, -1))(1)
 1
->>> (F(e_filter, X > 1) >> (e_get_or, -1))(e_right(1))
+>>> (F(e_filter, X > 1) >> P(e_get_or, -1))(e_right(1))
 -1
->>> (F(e_right) >> (e_filter, X == 1) >> (e_get_or_call, F(add, 0, -1)))(1)
+>>> (F(e_right) >> P(e_filter, X == 1) >> P(e_get_or_call, F(add, 0, -1)))(1)
 1
->>> (F(e_right) >> (e_filter, X > 1) >> (e_get_or_call, F(add, 0, -1)))(1)
+>>> (F(e_right) >> P(e_filter, X > 1) >> P(e_get_or_call, F(add, 0, -1)))(1)
 -1
->>> (F(e_right) >> (e_filter, X == 1) >>
-...    (e_map, excepts(ZeroDivisionError, F(1 // X) >> e_right, e_left)) >> (e_get_or, -1))(1)
+>>> (F(e_right) >> P(e_filter, X == 1) >>
+...    P(e_map, excepts(ZeroDivisionError, F(1 // X) >> e_right, e_left)) >> P(e_get_or, -1))(1)
 1
->>> (F(e_right) >> (e_filter, X == 1) >>
-...    (e_map, excepts(ZeroDivisionError, F(1 // X) >> e_right, e_left)) >> (e_get_or, -1))(0)
+>>> (F(e_right) >> P(e_filter, X == 1) >>
+...    P(e_map, excepts(ZeroDivisionError, F(1 // X) >> e_right, e_left)) >> P(e_get_or, -1))(0)
 -1
->>> (excepts(ZeroDivisionError, (F(e_right) >> (e_filter, X == 0) >>
-...    (e_map, excepts(ZeroDivisionError, F(1 // X) >> e_right, e_left)) >> (e_get_or_raise)), str)(0) ==
+>>> (excepts(ZeroDivisionError, (F(e_right) >> P(e_filter, X == 0) >>
+...    P(e_map, excepts(ZeroDivisionError, F(1 // X) >> e_right, e_left)) >> P(e_get_or_raise)), str)(0) ==
 ... 'integer division or modulo by zero')
 True
->>> (F(e_right) >> (e_filter, X == 1) >> e_get_right)(1)
+>>> (F(e_right) >> P(e_filter, X == 1) >> e_get_right)(1)
 1
->>> (excepts(ValueError, (F(e_right) >> (e_filter, X > 1) >> e_get_right), str)(1) ==
-...    "('__functoolsex__e__left', None) is not either right")
+>>> (excepts(ValueError, (F(e_right) >> P(e_filter, X > 1) >> e_get_right), str)(1) == "('__functoolsex__e__left', None) is not either right")
 True
->>> ((F(e_right) >> (e_filter, X > 1) >> (e_get_left))(1)) is None
+>>> ((F(e_right) >> P(e_filter, X > 1) >> P(e_get_left))(1)) is None
 True
->>> (F(e_right) >> (e_filter, X == 1) >> (e_or_else, e_right(2)) >> (e_get_or, -1))(1)
+>>> (F(e_right) >> P(e_filter, X == 1) >> P(e_or_else, e_right(2)) >> P(e_get_or, -1))(1)
 1
->>> (F(e_right) >> (e_filter, X > 1) >> (e_or_else, e_right(2)) >> (e_get_or, -1))(1)
+>>> (F(e_right) >> P(e_filter, X > 1) >> P(e_or_else, e_right(2)) >> P(e_get_or, -1))(1)
 2
->>> (F(e_right) >> (e_filter, X == 1) >> (e_or_call, (F(add, 1, 1) >> e_right)) >>
-...  (e_get_or, -1))(1)
+>>> (F(e_right) >> P(e_filter, X == 1) >> P(e_or_call, (F(add, 1, 1) >> e_right)) >>
+...  P(e_get_or, -1))(1)
 1
->>> (F(e_right) >> (e_filter, X > 1) >> (e_or_call, (F(add, 1, 1) >> e_right)) >>
-...  (e_get_or, -1))(1)
+>>> (F(e_right) >> P(e_filter, X > 1) >> P(e_or_call, (F(add, 1, 1) >> e_right)) >>
+...  P(e_get_or, -1))(1)
 2
 ```
 
