@@ -4,7 +4,7 @@ from os.path import exists
 from setuptools import setup
 
 setup(name='functoolsex',
-      version='0.3.1',
+      version='0.4.0',
       description='ex(pyrsistent, fn, pytoolz, ...) and faster on CPython and PyPy',
       url='https://github.com/aymazon/functools-ex',
       author='Tony L. Fan',

@@ -9,8 +9,8 @@ def test_XClass():
 
     assert (X == 'A')('A')
     assert ('A' == X)('A')
-    assert (X.x.call('upper') == 'A')(A())
-    assert ((X.call('lower').upper)('a'))() == 'A'
+    assert (X.x._('upper') == 'A')(A())
+    assert ((X._('lower').upper)('a'))() == 'A'
     assert (X[0][1] == 2)([(1, 2), (3, 4)])
     assert (X + 2 + 3 == 6)(1)
     assert (X[0] + 2 + 3 == 6)([1])

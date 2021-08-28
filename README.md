@@ -81,8 +81,8 @@ class A():
     x = 'a'
 
 assert (X == 'A')('A')
-assert (X.x.call('upper') == 'A')(A())
-assert ((X.call('lower').upper)('a'))() == 'A'
+assert (X.x._('upper') == 'A')(A())
+assert ((X._('lower').upper)('a'))() == 'A'
 assert (X[0][1] == 2)([(1, 2), (3, 4)])
 ```
 

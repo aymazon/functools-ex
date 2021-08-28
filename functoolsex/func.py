@@ -107,9 +107,9 @@ class XClass(object):
         (XX + 1 + 2 == 4)(1)
 
         class A(): x = 'a'
-        (XX.x.call('upper') == 'A')(A())
+        (XX.x._('upper') == 'A')(A())
 
-        (XX.call('upper').call('lower') == 'a')('A')
+        (XX._('upper')._('lower') == 'a')('A')
 
         (XX[0][1] == 1)([(0, 1), (2, 3)])
     Never use it like (X + X), it does not work.
@@ -129,7 +129,8 @@ class XClass(object):
             f, self.f = self.f, lambda o: getattr(f(o), name)
             return self
 
-    def call(self, name, *args, **kwargs):
+    def _(self, name, *args, **kwargs):
+        """Calls its own method."""
         if self.f is None:
             return XClass(lambda o: getattr(o, name)(*args, **kwargs))
         else:
@@ -628,8 +629,8 @@ def uppack_args(func, args):
     >>> from functoolsex import F, X
     >>> from toolz import juxt
     >>> Attr = namedtuple("Attr", ("name", "value"))
-    >>> parse_name = F(X.call("partition", "=")[0])
-    >>> parse_value = F(X.call("partition", "=")[2])
+    >>> parse_name = F(X._("partition", "=")[0])
+    >>> parse_value = F(X._("partition", "=")[2])
     >>> load = F(juxt(parse_name, parse_value)) >> F(uppack_args, Attr)
     >>> load("a=b")
     Attr(name='a', value='b')
