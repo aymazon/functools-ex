@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*
 from __future__ import absolute_import, division, print_function, unicode_literals  # NOQA
 
+import os
 from toolz.compatibility import *  # noqa
 from functools import partial
 from fn.monad import Full, Empty
@@ -10,7 +11,7 @@ from toolz.utils import no_default
 __all__ = ("flip", "P", "C", "F", "FF", "XClass", "op_filter", "op_map", "op_or_else", "op_or_call", "op_get_or",
            "op_get_or_call", "e_filter", "e_left", "e_right", "e_is_left", "e_is_right", "e_map", "e_or_else",
            "e_or_call", "e_get_or", "e_get_or_call", "e_get_or_raise", "e_get_left", "e_get_right", "R", "fold",
-           "is_none", "is_not_none", "is_option_full", "is_option_empty", "uppack_args")
+           "is_none", "is_not_none", "is_option_full", "is_option_empty", "uppack_args", "log")
 
 
 def flip(f):
@@ -95,10 +96,9 @@ def FF(data, *forms):
     >>> FF(2, P(mul, 3), inc)
     7
     """
-    result = data
     for form in forms:
-        result = form(result)
-    return result
+        data = form(data)
+    return data
 
 
 class XClass(object):
@@ -636,3 +636,19 @@ def uppack_args(func, args):
     Attr(name='a', value='b')
     """
     return func(*args)
+
+
+__log_is_on = 'PY__FUNCTOOLSEX_LOG_OFF' not in os.environ
+
+
+def log(fmt, logger=print):
+    """Print and return arg. Can be useful to debug. Can off it by env PY__FUNCTOOLSEX_LOG_OFF.
+    Warn: log("It is: %s", LOGGER.info) return a function.
+    >>> from operator import add, mul
+    >>> (F(add, 1) >> log('add res: %s') >> P(mul, 3))(2)
+    add res: 3
+    9
+    """
+    if __log_is_on:
+        return lambda obj: (obj, logger(fmt % (obj, )))[0]
+    return identity

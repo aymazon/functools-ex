@@ -10,25 +10,31 @@ but I do not think that is necessary, before your doing, read about performance,
 [PyPy](https://www.pypy.org/performance.html), [pyrsistent](https://github.com/tobgu/pyrsistent#performance).
 
 
+```
 Faster functions:
     ("flip", "C", "F", "FF(thread_last)", "X(_)", "R(juxt)", "fold")
 
 New functions:
-    ("op_filter", "op_map", "op_or_else", "op_or_call", "op_get_or", "op_get_or_call", "tco_yield")
+    ("tco_yield", "op_filter", "op_map", "op_or_else", "op_or_call", "op_get_or", "op_get_or_call",
+     "e_filter", "e_left", "e_right", "e_is_left", "e_is_right", "e_map", "e_or_else", "e_or_call",
+     "e_get_or", "e_get_or_call", "e_get_or_raise", "e_get_left", "e_get_right",
+     "R", "fold", "is_none", "is_not_none", "is_option_full", "is_option_empty", "uppack_args", "log")
+PS:
+    Log is very useful to debeg, and can be close with env PY__FUNCTOOLSEX_LOG_OFF.
+```
 
-## Exemples
+## Examples
 
-1. flip, faster than fn and toolz.
-
+### flip, faster than fn and toolz.
 ```python
 >>> from operator import sub
 >>> flip(sub)(3, 2)
 -1
 ```
 
-1. P, just alias to functools partial
+### P, just alias to functools partial
 
-1. C, Curry a function.
+### C, Curry a function.
 ```python
 >>> from functoolsex import C
 >>> sum_func = lambda x, y, z: x + y + z
@@ -44,8 +50,7 @@ New functions:
 6
 ```
 
-1. F, like [fn.F](https://github.com/kachayev/fn.py#high-level-operations-with-functions).
-
+### F, like [fn.F](https://github.com/kachayev/fn.py#high-level-operations-with-functions).
 ```python
 >>> from functoolsex import F, P
 >>> from functools import partial
@@ -59,8 +64,7 @@ True
 7
 ```
 
-1. FF, like [toolz.thread_last](https://github.com/pytoolz/toolz/blob/ea3ba0d60a33b256c8b2a7be43aff926992ffcdb/toolz/functoolz.py#L78).
-
+### FF, like [toolz.thread_last](https://github.com/pytoolz/toolz/blob/ea3ba0d60a33b256c8b2a7be43aff926992ffcdb/toolz/functoolz.py#L78).
 ```python
 >>> from functoolsex import FF, P
 >>> from operator import add, mul
@@ -71,10 +75,7 @@ True
 7
 ```
 
-1. X, like [fn._](https://github.com/kachayev/fn.py#scala-style-lambdas-definition).
-But not support (_ + _ and print its definition), because it is terribly slow.
-You can find more examples in functoolsex/tests.py.
-
+### X, like [fn.\_](https://github.com/kachayev/fn.py#scala-style-lambdas-definition). But not support (_ + _ and print its definition), because it is terribly slow. You can find more examples in functoolsex/tests.py.
 ```python
 from functoolsex import X
 class A():
@@ -86,9 +87,7 @@ assert ((X._('lower').upper)('a'))() == 'A'
 assert (X[0][1] == 2)([(1, 2), (3, 4)])
 ```
 
-1. R, like [toolz.juxt](https://github.com/pytoolz/toolz/blob/ea3ba0d60a33b256c8b2a7be43aff926992ffcdb/toolz/functoolz.py#L646).
-Run functions with the same args.
-
+### R, like [toolz.juxt](https://github.com/pytoolz/toolz/blob/ea3ba0d60a33b256c8b2a7be43aff926992ffcdb/toolz/functoolz.py#L646). Run functions with the same args.
 ```python
 >>> from functoolsex import R, X, P
 >>> from operator import add
@@ -110,8 +109,7 @@ True
 (1, 2)
 ```
 
-1. op, '>>' can format by editor, take the place of [fn.monad.Option](https://github.com/kachayev/fn.py#functional-style-for-error-handling).
-
+### op, '>>' can format by editor, take the place of [fn.monad.Option](https://github.com/kachayev/fn.py#functional-style-for-error-handling).
 ```python
 >>> from functoolsex import F, X, P
 >>> from operator import add
@@ -140,7 +138,7 @@ True
 ```
 
 
-1. Either like op, but support Exception.
+### Either like op, but support Exception.
 
 ```python
 >>> from functoolsex import F, X, P
@@ -182,8 +180,15 @@ True
 2
 ```
 
-1. fold, like [toolz.sandbox.fold](https://github.com/pytoolz/toolz/blob/ea3ba0d60a33b256c8b2a7be43aff926992ffcdb/toolz/sandbox/parallel.py#L13), but as fast as reduce on PyPy.
+### log, very useful to debug.
+```python
+>>> from operator import add, mul
+>>> (F(add, 1) >> log('add res: %s') >> P(mul, 3))(2)
+add res: 3
+9
+```
 
+### fold, like [toolz.sandbox.fold](https://github.com/pytoolz/toolz/blob/ea3ba0d60a33b256c8b2a7be43aff926992ffcdb/toolz/sandbox/parallel.py#L13), but as fast as reduce on PyPy.
 ```python
 >>> from functoolsex import fold
 >>> from operator import add
@@ -197,8 +202,7 @@ True
 499501
 ```
 
-1. tco_yield, while is bad, and yield from is terribly slower.
-More info [fn.recur.tco](https://github.com/kachayev/fn.py#trampolines-decorator).
+### tco_yield, while is bad, and yield from is terribly slower. More info [fn.recur.tco](https://github.com/kachayev/fn.py#trampolines-decorator).
 
 ```python
 >>> from functoolsex import tco_yield
