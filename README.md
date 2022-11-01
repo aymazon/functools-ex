@@ -2,6 +2,7 @@
 
 ## Instruction
 It depends on fn/toolz/pyrsistent, and provides faster implementation, especially on PyPy.
+Now for > Python 3.11, fn is merged.
 
 It is probably the fastest open-resource functional base functions on PyPy.
 
@@ -221,6 +222,11 @@ add res: 3
 
 # Ignore these
 ```bash
+# doc test
+python -m doctest functoolsex/func.py
+python -m doctest functoolsex/iters.py
+python -m doctest functoolsex/recur.py
+
 # edit tag in setup.py
 git tag v0.0.1
 rm dist/functoolsex-*

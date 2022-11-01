@@ -3,9 +3,17 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals  # NOQA
 
+from sys import version_info
 import platform
 import heapq
 import operator
+from functools import partial
+from collections import deque
+try:
+    from collections import Iterable
+except ImportError:
+    from collections.abc import Iterable
+from operator import attrgetter
 from itertools import cycle, repeat, chain, dropwhile, takewhile, islice, \
     starmap, tee, product, permutations, combinations
 from pyrsistent import PList, PVector
@@ -29,12 +37,8 @@ try:
             from cytoolz import identity, partitionby  # noqa
 except Exception:
     pass
-from fn.monad import Empty
-from fn.iters import compact, reject, ncycles, repeatfunc, grouper, \
-    roundrobin, partition as splitin, splitat, splitby, powerset, pairwise, \
-    iter_except, flatten
 
-from functoolsex.func import is_not_none, is_option_full
+from functoolsex.func import is_not_none
 
 try:
     # 兼容 2.6.6 (>= centos 6.5)
@@ -63,7 +67,7 @@ except ImportError:
             yield tuple(pool[i] for i in indices)
 
 
-__all__ = ("combinations_with_replacement", "compress", "every", "first_object", "first_option_full",
+__all__ = ("combinations_with_replacement", "compress", "compact", "reject", "every", "first_object",
            "first_pred_object", "first_true", "getter", "map_call", "lmap_call", "tmap_call", "laccumulate", "lchain",
            "lcombinations", "lcombinations_with_replacement", "lcompact", "lcompress", "lconcat", "lconcatv", "lcons",
            "lcycle", "ldiff", "ldrop", "ldropwhile", "lfilter", "lfilterfalse", "lflatten", "lgrouper", "linterleave",
@@ -78,7 +82,14 @@ __all__ = ("combinations_with_replacement", "compress", "every", "first_object",
            "tpartition", "tpartition_all", "tpermutations", "tpluck", "tjoin", "tpowerset", "tproduct",
            "trandom_sample", "tpartitionby", "trange", "treject", "tremove", "trepeat", "trepeatfunc", "trest",
            "troundrobin", "tsliding_window", "tsplitat", "tsplitby", "tsplitin", "tstarmap", "ttail", "ttake",
-           "ttake_nth", "ttakewhile", "ttee", "ttopk", "tunique", "tzip", "tzip_longest", "some")
+           "ttake_nth", "ttakewhile", "ttee", "ttopk", "tunique", "tzip", "tzip_longest", "some", "consume", "padnone",
+           "ncycles", "repeatfunc", "splitin", "splitat", "splitby", "powerset", "pairwise", "iter_except", "flatten")
+
+# shortcut to remove all falsey items from iterable
+compact = partial(filter, None)
+
+# filterfalse under alias 'reject'
+reject = filterfalse
 
 
 def every(predicate, iterable):
@@ -115,17 +126,6 @@ def first_object(iterable, pred=is_not_none):
     0
     """
     return first_true(iterable, default=None, pred=pred)
-
-
-def first_option_full(iterable, pred=is_option_full):
-    """
-    >>> from fn.monad import Full, Empty
-    >>> first_option_full([Empty(), Full(0)])
-    Full(0)
-    >>> first_option_full([])
-    Empty()
-    """
-    return first_true(iterable, default=Empty(), pred=pred)
 
 
 def first_pred_object(iterable, pred=is_not_none):
@@ -1231,3 +1231,160 @@ def tflatten(items):
     (1, 2, 3, 4, 5, 6, 7, 8)
     """
     return tuple(flatten(items))
+
+
+# ---------- from fn ----------
+def consume(iterator, n=None):
+    """Advance the iterator n-steps ahead. If n is none, consume entirely.
+    http://docs.python.org/3.4/library/itertools.html#itertools-recipes
+    """
+    # Use functions that consume iterators at C speed.
+    if n is None:
+        # feed the entire iterator into a zero-length deque
+        deque(iterator, maxlen=0)
+    else:
+        # advance to the empty slice starting at position n
+        next(islice(iterator, n, n), None)
+
+
+def padnone(iterable):
+    """Returns the sequence elements and then returns None indefinitely.
+    Useful for emulating the behavior of the built-in map() function.
+    http://docs.python.org/3.4/library/itertools.html#itertools-recipes
+    """
+    return chain(iterable, repeat(None))
+
+
+def ncycles(iterable, n):
+    """Returns the sequence elements n times
+
+    http://docs.python.org/3.4/library/itertools.html#itertools-recipes
+    """
+    return chain.from_iterable(repeat(tuple(iterable), n))
+
+
+def repeatfunc(func, times=None, *args):
+    """Repeat calls to func with specified arguments.
+    Example:  repeatfunc(random.random)
+
+    http://docs.python.org/3.4/library/itertools.html#itertools-recipes
+    """
+    if times is None:
+        return starmap(func, repeat(args))
+    return starmap(func, repeat(args, times))
+
+
+def grouper(n, iterable, fillvalue=None):
+    """Collect data into fixed-length chunks or blocks, so
+    grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx
+
+    http://docs.python.org/3.4/library/itertools.html#itertools-recipes
+    """
+    args = [iter(iterable)] * n
+    return zip_longest(*args, fillvalue=fillvalue)
+
+
+def roundrobin(*iterables):
+    """roundrobin('ABC', 'D', 'EF') --> A D E B F C
+    Recipe originally credited to George Sakkis.
+    Reimplemented to work both in Python 2+ and 3+.
+
+    http://docs.python.org/3.4/library/itertools.html#itertools-recipes
+    """
+    pending = len(iterables)
+    next_attr = "next" if version_info[0] == 2 else "__next__"
+    nexts = cycle(map(attrgetter(next_attr), map(iter, iterables)))
+    while pending:
+        try:
+            for n in nexts:
+                yield n()
+        except StopIteration:
+            pending -= 1
+            nexts = cycle(islice(nexts, pending))
+
+
+def splitin(pred, iterable):
+    """Use a predicate to partition entries into false entries and true entries
+    partition(is_odd, range(10)) --> 0 2 4 6 8   and  1 3 5 7 9
+
+    http://docs.python.org/3.4/library/itertools.html#itertools-recipes
+    """
+    t1, t2 = tee(iterable)
+    return filterfalse(pred, t1), filter(pred, t2)
+
+
+def splitat(t, iterable):
+    """Split iterable into two iterators after given number of iterations
+    splitat(2, range(5)) --> 0 1 and 2 3 4
+    """
+    t1, t2 = tee(iterable)
+    return islice(t1, t), islice(t2, t, None)
+
+
+def splitby(pred, iterable):
+    """Split iterable into two iterators at first false predicate
+    splitby(is_even, range(5)) --> 0 and 1 2 3 4
+    """
+    t1, t2 = tee(iterable)
+    return takewhile(pred, t1), dropwhile(pred, t2)
+
+
+def powerset(iterable):
+    """powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
+
+    http://docs.python.org/3.4/library/itertools.html#itertools-recipes
+    """
+    s = list(iterable)
+    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
+
+def pairwise(iterable):
+    """pairwise(s) -> (s0,s1), (s1,s2), (s2, s3), ...
+
+    http://docs.python.org/3.4/library/itertools.html#itertools-recipes
+    """
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
+def iter_except(func, exception, first_=None):
+    """ Call a function repeatedly until an exception is raised.
+
+    Converts a call-until-exception interface to an iterator interface.
+    Like __builtin__.iter(func, sentinel) but uses an exception instead
+    of a sentinel to end the loop.
+
+    Examples:
+        iter_except(functools.partial(heappop, h), IndexError)   # priority queue iterator
+        iter_except(d.popitem, KeyError)                         # non-blocking dict iterator
+        iter_except(d.popleft, IndexError)                       # non-blocking deque iterator
+        iter_except(q.get_nowait, Queue.Empty)                   # loop over a producer Queue
+        iter_except(s.pop, KeyError)                             # non-blocking set iterator
+
+    http://docs.python.org/3.4/library/itertools.html#itertools-recipes
+    """
+    try:
+        if first_ is not None:
+            yield first_()            # For database APIs needing an initial cast to db.first()
+        while 1:
+            yield func()
+    except exception:
+        pass
+
+
+def flatten(items):
+    """Flatten any level of nested iterables (not including strings, bytes or
+    bytearrays).
+    Reimplemented to work with all nested levels (not only one).
+
+    http://docs.python.org/3.4/library/itertools.html#itertools-recipes
+    """
+    for item in items:
+        is_iterable = isinstance(item, Iterable)
+        is_string_or_bytes = isinstance(item, (str, bytes, bytearray))
+        if is_iterable and not is_string_or_bytes:
+            for i in flatten(item):
+                yield i
+        else:
+            yield item

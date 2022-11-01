@@ -1,3 +1,2 @@
 pyrsistent
-fn
 toolz

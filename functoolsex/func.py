@@ -1,17 +1,29 @@
 # -*- coding: utf-8 -*
 from __future__ import absolute_import, division, print_function, unicode_literals  # NOQA
 
+from sys import version_info
 import os
+import platform
 from toolz.compatibility import *  # noqa
 from functools import partial
-from fn.monad import Full, Empty
-from fn.func import identity
+from itertools import starmap
+
+from toolz import identity
+try:
+    import cytoolz  # noqa
+except ImportError:
+    pass
+else:
+    if platform.python_implementation() == 'CPython':
+        from cytoolz import identity  # noqa
+
 from toolz.utils import no_default
 
 __all__ = ("flip", "P", "C", "F", "FF", "XClass", "op_filter", "op_map", "op_or_else", "op_or_call", "op_get_or",
            "op_get_or_call", "e_filter", "e_left", "e_right", "e_is_left", "e_is_right", "e_map", "e_or_else",
            "e_or_call", "e_get_or", "e_get_or_call", "e_get_or_raise", "e_get_left", "e_get_right", "R", "fold",
-           "is_none", "is_not_none", "is_option_full", "is_option_empty", "uppack_args", "log")
+           "is_none", "is_not_none", "uppack_args", "log",
+           "apply", "call", "zipwith", "foldl", "foldr", "unfold")
 
 
 def flip(f):
@@ -615,14 +627,6 @@ def is_not_none(obj):
     return obj is not None
 
 
-def is_option_full(obj):
-    return isinstance(obj, Full)
-
-
-def is_option_empty(obj):
-    return isinstance(obj, Empty)
-
-
 def uppack_args(func, args):
     """Up pack a tuple into function like *args.
     >>> from collections import namedtuple
@@ -652,3 +656,83 @@ def log(fmt, logger=print):
     if __log_is_on:
         return lambda obj: (obj, logger(fmt % (obj, )))[0]
     return identity
+
+
+# ---------- from fn ----------
+def _apply(f, args=None, kwargs=None):
+    return f(*(args or []), **(kwargs or {}))
+
+
+apply = apply if version_info[0] == 2 else _apply
+
+
+def call(f, *args, **kwargs):
+    return f(*args, **kwargs)
+
+
+def zipwith(f):
+    'zipwith(f)(seq1, seq2, ..) -> [f(seq1[0], seq2[0], ..), f(seq1[1], seq2[1], ..), ...]'
+    return F(starmap, f) << zip
+
+
+def foldl(f, init=None):
+    """Return function to fold iterator to scala value
+    using passed function as reducer.
+
+    Usage:
+    >>> from operator import add, mul
+    >>> foldl(add)([0,1,2,3,4])
+    10
+    >>> foldl(mul, 1)([1,2,3])
+    6
+    """
+    def fold(it):
+        args = [f, it]
+        if init is not None:
+            args.append(init)
+        return reduce(*args)
+
+    return fold
+
+
+def foldr(f, init=None):
+    """Return function to fold iterator to scala value using
+    passed function as reducer in reverse order (consume values
+    from iterator from right-to-left).
+
+    Usage:
+    >>> foldr(call, 10)([lambda s: s**2, lambda k: k+10])
+    400
+    """
+    def fold(it):
+        args = [flip(f), reversed(it)]
+        if init is not None:
+            args.append(init)
+        return reduce(*args)
+
+    return fold
+
+
+def unfold(f):
+    """Return function to unfold value into stream using
+    passed function as values producer. Passed function should
+    accept current cursor and should return:
+      * tuple of two elements (value, cursor), value will be added
+        to output, cursor will be used for next function call
+      * None in order to stop producing sequence
+
+    Usage:
+    >>> from itertools import islice
+    >>> doubler = unfold(lambda x: (x*2, x*2))
+    >>> list(islice(doubler(10), 0, 10))
+    [20, 40, 80, 160, 320, 640, 1280, 2560, 5120, 10240]
+    """
+    def _unfolder(start):
+        value, curr = None, start
+        while 1:
+            step = f(curr)
+            if step is None:
+                break
+            value, curr = step
+            yield value
+    return _unfolder
